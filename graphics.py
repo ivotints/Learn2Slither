@@ -14,6 +14,8 @@ class init_graphics:
         self.moving_dir = self.board.initial_direction
         self.snake_segments = self.get_initial_snake_segments() # whole snake will be stored here from tail to head
         self.cell_size = self.window.get_width() // self.board.size_x  # 80
+        self.green_bokeh = None
+        self.red_bokeh = None
 
 
     def get_initial_snake_segments(self):
@@ -137,12 +139,51 @@ class init_graphics:
             shift_y, shift_x = pupil_shift
             pygame.draw.circle(self.window, (0, 0, 0),
                             (head_center_y + offset_y + shift_y,
-                             head_center_x + offset_x + shift_x), 4)
+                             head_center_x + offset_x + shift_x), 5)
+
+
+    def _draw_bokeh(self, y, x, food):
+        center_y = y * self.cell_size + self.cell_size // 2
+        center_x = x * self.cell_size + self.cell_size // 2
+        surface = 0
+        if food == self.board.APPLE:
+            if self.green_bokeh == None:
+                # here we create surface for green bokeh
+                pass
+            else:
+                surface = self.green_bokeh
+        else:
+            if self.red_bokeh == None:
+                # here we create surface for red bokeh
+                pass
+            else:
+                surface = self.red_bokeh
+
+
+
+        pass
+
+    def _draw_food(self):
+        # first need to find coordinates of food
+        food_coords = []
+        for y in range(self.board.size_y):
+            for x in range(self.board.size_x):
+                if self.board.table[y][x] == self.board.APPLE or self.board.table[y][x] == self.board.PEPPER:
+                    food_coords.append((y, x, self.board.table[y][x]))
+
+        # then i need to find their pixel center
+
+        for y, x, food in food_coords:
+            self._draw_bokeh(y, x, food)
+
+
+        pass
+
 
     def draw_board(self):
         self._draw_initial_board()
         self._draw_snake()
-
+        self._draw_food()
         # now i need to draw a green food
 
 
