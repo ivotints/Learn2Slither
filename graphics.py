@@ -23,7 +23,7 @@ class init_graphics:
         snake_segments.append((self.board.head_y, self.board.head_x))
         return snake_segments
 
-    def draw_initial_board(self):
+    def _draw_initial_board(self):
         """Draws initial board without snake and food"""
 
         if self.saved_board != None:
@@ -64,14 +64,7 @@ class init_graphics:
                 self.window.blit(inner_surface, (x * cell_size + shift + border, y * cell_size + shift + border))
         self.saved_board = self.window.copy()
 
-    def draw_board(self):
-        self.draw_initial_board()
-
-
-        # snake made of bigger circle of shadow, and smaller circle of violate body with gradient.
-        # bigger the length of snake - bigger the circles. We start drawing snake from tail to head, starting from middle of tail cell going to the midle of next cell having between aproximatly 10 connecting circels,
-        # drawing first all the shadows and then all the gradient bodies.
-        # At the end we draw an 2 eyes for the snake, made from 2 circles : 1 white and 1 smaller black, whaching in the direction of moving.
+    def _draw_snake(self):
 
         def get_purple():
             CYCLE = 16
@@ -111,15 +104,46 @@ class init_graphics:
                 pygame.draw.circle(self.window, color_function(), (center_y, center_x), size)
 
         for i in range(len(self.snake_segments) - 1):
-                draw_segment(self.snake_segments[i], self.snake_segments[i + 1], min(30, 16 + len(self.snake_segments)) + 4, get_shadow)
+            draw_segment(self.snake_segments[i], self.snake_segments[i + 1], min(30, 16 + len(self.snake_segments)) + 4, get_shadow)
 
         for i in range(len(self.snake_segments) - 1):
-                draw_segment(self.snake_segments[i], self.snake_segments[i + 1], min(30, 16 + len(self.snake_segments)), get_purple)
+            draw_segment(self.snake_segments[i], self.snake_segments[i + 1], min(30, 16 + len(self.snake_segments)), get_purple)
 
-        # now i need to dray eyes with respect to direction of movement
+        self._draw_snake_eyes()
 
+    def _draw_snake_eyes(self):
+        head_center_y = self.board.head_y * self.cell_size + self.cell_size // 2
+        head_center_x = self.board.head_x * self.cell_size + self.cell_size // 2
 
+        dir_y, dir_x = self.moving_dir
+        if dir_x == -1:  # LEFT
+            eye_offsets = [(-8, 0), (8, 0)]
+            pupil_shift = (0, 3)
+        elif dir_y == -1:  # UP
+            eye_offsets = [(0,-8), (0, 8)]
+            pupil_shift = (3, 0)
+        elif dir_x == 1:  # RIGHT
+            eye_offsets = [(-8, 0), (8, 0)]
+            pupil_shift = (0, -3)
+        else:  # DOWN
+            eye_offsets = [(0, -8), (0, 8)]
+            pupil_shift = (-3, 0)
 
+        for offset_y, offset_x in eye_offsets:
+            pygame.draw.circle(self.window, (255, 255, 255),
+                            (head_center_y + offset_y, head_center_x + offset_x), 8)
+
+            # Pupil
+            shift_y, shift_x = pupil_shift
+            pygame.draw.circle(self.window, (0, 0, 0),
+                            (head_center_y + offset_y + shift_y,
+                             head_center_x + offset_x + shift_x), 4)
+
+    def draw_board(self):
+        self._draw_initial_board()
+        self._draw_snake()
+
+        # now i need to draw a green food
 
 
 

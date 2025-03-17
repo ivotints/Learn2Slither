@@ -51,8 +51,10 @@ class init_board:
             raise RuntimeError("No empty adjacent cells found")
 
         if (y, x) == (self.head_y, self.head_x):
-            self.initial_direction = random.randint(0, len(empty_cells) - 1)
-            return empty_cells[self.initial_direction]
+            tmp = random.randint(0, len(empty_cells) - 1)
+            a, b = empty_cells[tmp]
+            self.initial_direction = a - y, b - x
+            return empty_cells[tmp]
 
         return empty_cells[random.randint(0, len(empty_cells) - 1)]
 
