@@ -75,11 +75,11 @@ class init_graphics:
         # At the end we draw an 2 eyes for the snake, made from 2 circles : 1 white and 1 smaller black, whaching in the direction of moving.
 
         # draw circle purple on the tail coordinate
-        self.j = 0
         def get_purple():
             CYCLE = 16
             if not hasattr(get_purple, 'colors'):
                 get_purple.colors = []
+                get_purple.counter = 0
                 for i in range(CYCLE):
                     r = int(96 + (173 - 96) * (i / CYCLE))
                     g = int(1 + (78 - 1) * (i / CYCLE))
@@ -90,7 +90,9 @@ class init_graphics:
                     g = int(78 - (78 - 1) * (i / CYCLE))
                     b = int(253 - (253 - 172) * (i / CYCLE))
                     get_purple.colors.append((r, g, b))
-            return get_purple.colors[self.j % (CYCLE * 2)]
+
+            get_purple.counter += 1
+            return get_purple.colors[get_purple.counter % (CYCLE * 2)]
 
 
         # i need to calculate coordinate of the tail
@@ -109,7 +111,6 @@ class init_graphics:
             dir_x = end_x - start_x
 
             for i in range(10):
-                self.j += 1
                 center_y = start_center_y + 8 * i * dir_y
                 center_x = start_center_x + 8 * i * dir_x
                 pygame.draw.circle(self.window, get_purple(), (center_y, center_x), 18)
