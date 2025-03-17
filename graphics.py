@@ -67,14 +67,12 @@ class init_graphics:
     def draw_board(self):
         self.draw_initial_board()
 
-        # first i will draw a snake.
 
         # snake made of bigger circle of shadow, and smaller circle of violate body with gradient.
         # bigger the length of snake - bigger the circles. We start drawing snake from tail to head, starting from middle of tail cell going to the midle of next cell having between aproximatly 10 connecting circels,
         # drawing first all the shadows and then all the gradient bodies.
         # At the end we draw an 2 eyes for the snake, made from 2 circles : 1 white and 1 smaller black, whaching in the direction of moving.
 
-        # draw circle purple on the tail coordinate
         def get_purple():
             CYCLE = 16
             if not hasattr(get_purple, 'colors'):
@@ -94,13 +92,7 @@ class init_graphics:
             get_purple.counter += 1
             return get_purple.colors[get_purple.counter % (CYCLE * 2)]
 
-
-        # i need to calculate coordinate of the tail
-        # i now the self.cell_size = 80
-        # i now the coordinate of tail
-
-
-        def draw_segment(start_pos, end_pos):
+        def draw_segment(start_pos, end_pos, size):
             start_y, start_x = start_pos
             end_y, end_x = end_pos
 
@@ -113,9 +105,18 @@ class init_graphics:
             for i in range(10):
                 center_y = start_center_y + 8 * i * dir_y
                 center_x = start_center_x + 8 * i * dir_x
-                pygame.draw.circle(self.window, get_purple(), (center_y, center_x), 18)
+                pygame.draw.circle(self.window, get_purple(), (center_y, center_x), size)
+
+        # for i in range(len(self.snake_segments) - 1):
+        #         draw_segment(self.snake_segments[i], self.snake_segments[i + 1], 18)
 
         for i in range(len(self.snake_segments) - 1):
-                draw_segment(self.snake_segments[i], self.snake_segments[i + 1])
+                draw_segment(self.snake_segments[i], self.snake_segments[i + 1], min(30, 16 + len(self.snake_segments)))
 
-        pygame.display.flip() # call after wrote something to the screen to update it
+
+
+
+
+
+
+        pygame.display.flip()

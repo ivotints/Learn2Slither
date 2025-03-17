@@ -27,52 +27,47 @@ class init_board:
         self.size_y = 10
         self.size_x = 10
         self.table = np.full((self.size_y, self.size_x),self.EMPTY, dtype='int8')
+        self.head_y = 0
+        self.head_x = 0
+        self.tail_y = 0
+        self.tail_x = 0
 
-        # set head to random place
-        self.head_y, self.head_x = self.set_cell_to_random_empty(self.HEAD)
-
-        # now I need to set first segment of tail for snake
-        # lets count amount of empty cells around snake and get a list of empty coordinates
-
-        empty_cells = []
-        for dir in self.DIRECTIONS:
-            new_y = self.head_y + dir[0]
-            new_x = self.head_x + dir[1]
-            if self.is_in_table(new_y, new_x) and self.is_empty(new_y, new_x):
-                empty_cells.append((new_y, new_x))
-        self.initial_direction = random.randint(0, len(empty_cells) - 1)
-        tail_y, tail_x = empty_cells[self.initial_direction]
-        self.set_cell(tail_y, tail_x, self.TAIL)
-        self.second_tail_y = tail_y
-        self.second_tail_x = tail_x
-
-        # now set second tail segment
-
-        empty_cells = []
-        for dir in self.DIRECTIONS:
-            new_y = tail_y + dir[0]
-            new_x = tail_x + dir[1]
-            if self.is_in_table(new_y, new_x) and self.is_empty(new_y, new_x):
-                empty_cells.append((new_y, new_x))
-        tail_y, tail_x = empty_cells[random.randint(0, len(empty_cells) - 1)]
-        self.set_cell(tail_y, tail_x, self.TAIL)
-
-        # to remember the tail position:
-        self.tail_y = tail_y
-        self.tail_x = tail_x
-
-        # now we have our snake set.
-
-        # lets set the food and pepper
+        self._init_snake()
 
         self.set_cell_to_random_empty(self.APPLE)
         self.set_cell_to_random_empty(self.APPLE)
         self.set_cell_to_random_empty(self.PEPPER)
 
+    def _place_adjacent_segment(self, y, x):
+        """Find and return coordinates for a new segment adjacent to given position"""
+        empty_cells = []
+        for dir_y, dir_x in self.DIRECTIONS:
+            new_y = y + dir_y
+            new_x = x + dir_x
+            if self.is_in_table(new_y, new_x) and self.is_empty(new_y, new_x):
+                empty_cells.append((new_y, new_x))
+
+        if not empty_cells:
+            raise RuntimeError("No empty adjacent cells found")
+
+        if (y, x) == (self.head_y, self.head_x):
+            self.initial_direction = random.randint(0, len(empty_cells) - 1)
+            return empty_cells[self.initial_direction]
+
+        return empty_cells[random.randint(0, len(empty_cells) - 1)]
 
 
+    def _init_snake(self):
+        """Initialize snake with head and two tail segments"""
+        self.head_y, self.head_x = self.set_cell_to_random_empty(self.HEAD)
 
+        self.second_tail_y, self.second_tail_x = self._place_adjacent_segment(
+            self.head_y, self.head_x)
+        self.set_cell(self.second_tail_y, self.second_tail_x, self.TAIL)
 
+        self.tail_y, self.tail_x = self._place_adjacent_segment(
+            self.second_tail_y, self.second_tail_x)
+        self.set_cell(self.tail_y, self.tail_x, self.TAIL)
 
 
     def is_in_table(self, y, x):
@@ -86,16 +81,6 @@ class init_board:
         return False
 
     def set_to_empty(self, y, x, value):
-        """Will set only if that coordinate is empty
-
-        ## Parameters
-            y (int): row
-            x (int): column
-            value (int): Value to set in the cell
-
-        ## Returns
-            bool: True for success, False for fail
-        """
         if (x < 0 or x >= self.size_x or y < 0 or y >= self.size_y):
             return False
         if (self.table[y][x] != self.EMPTY):
