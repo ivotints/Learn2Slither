@@ -1,9 +1,10 @@
 
 Install requirements:
+```
     python3 -m venv venv
     source ./venv/bin/activate
     pip install -r requirements.txt
-
+```
 project about reinforsment learning snake game:
 
 The game board is a 10x10 grid where the snake interacts with apples.
@@ -28,20 +29,20 @@ Models Folder: Include trained models in a chosen file format (e.g., .txt), show
 Training: Train multiple models (1, 10, and 100 sessions) to demonstrate learning progress. Training takes time, so prepare in advance.
 Evaluation: You must be able to load and test saved models without additional learning to verify performance.
 Goal: The snake should reach a length of 10+ and survive as long as possible.
-
+```
 Snake vision:
-          W 
-          0 
-          0 
-          G 
-          R 
-          0 
-          0 
-          0 
+          W
+          0
+          0
+          G
+          R
+          0
+          0
+          0
 W000000000HW
-          S 
-          0 
-          W 
+          S
+          0
+          W
 
 • W = Wall
 • H = Snake Head
@@ -49,21 +50,22 @@ W000000000HW
 • G = Green apple
 • R = Red apple
 • 0 = Empty space
-
+```
 create board 10 on 10
 each position of the board can have 5 states: Snake Head, body segment, Green apple, Red apple, Empty
 
 
 
 Inputs that I would give:
+
     * Amount of inputs should be fixed for different map size other than 10 (bonus)
 
-    * Distance to left Wall 
+    * Distance to left Wall
     * Distance to right Wall
     * Distance to top Wall
     * Distance to down Wall
-    
-    * Distance to left closest obstacle (Tail or Wall) 
+
+    * Distance to left closest obstacle (Tail or Wall)
     * Distance to right closest obstacle (Tail or Wall)
     * Distance to top closest obstacle (Tail or Wall)
     * Distance to down closest obstacle (Tail or Wall)
@@ -72,8 +74,8 @@ Inputs that I would give:
     * Distance to right Food
     * Distance to top Food
     * Distance to down Food
-    
-    * Distance to left Pepper 
+
+    * Distance to left Pepper
     * Distance to right Pepper
     * Distance to top Pepper
     * Distance to down Pepper
@@ -89,4 +91,3 @@ Inputs that I would give:
     * Each node (total 19 of them) will get some value like 0 for nothing, 1 for tail, 2 for head, 3 for apple, 4 for pepper.
     This approach will not pass bonus with changing the game area, but should be more smarter snake.
 
-    

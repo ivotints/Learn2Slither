@@ -13,6 +13,7 @@ class init_graphics:
         self.saved_board = None
         self.moving_dir = self.board.initial_direction
         self.snake_segments = self.get_initial_snake_segments() # whole snake will be stored here from tail to head
+        self.cell_size = self.window.get_width() // self.board.size_x  # 80
 
 
     def get_initial_snake_segments(self):
@@ -36,8 +37,7 @@ class init_graphics:
 
         self.window.fill(floor_color)
 
-        window_width = self.window.get_width()
-        cell_size = window_width // self.board.size_x  # 80
+        cell_size = self.cell_size
         shift = 4
         border = 7
 
@@ -67,81 +67,54 @@ class init_graphics:
     def draw_board(self):
         self.draw_initial_board()
 
-        # Calculate cell size and center offset
-        window_width = self.window.get_width()
-        cell_size = window_width // self.board.size_x
-        center_offset = cell_size // 2
+        # first i will draw a snake.
 
-        # Shadow and body colors
-        shadow_color = (25, 25, 40)
-        body_color_outer = (120, 80, 200)
-        body_color_inner = (160, 100, 230)
+        # snake made of bigger circle of shadow, and smaller circle of violate body with gradient.
+        # bigger the length of snake - bigger the circles. We start drawing snake from tail to head, starting from middle of tail cell going to the midle of next cell having between aproximatly 10 connecting circels,
+        # drawing first all the shadows and then all the gradient bodies.
+        # At the end we draw an 2 eyes for the snake, made from 2 circles : 1 white and 1 smaller black, whaching in the direction of moving.
 
-        # Draw shadows first (from tail to head)
-        for segment in self.snake_segments:
-            y, x = segment
-            center_x = x * cell_size + center_offset
-            center_y = y * cell_size + center_offset
+        # draw circle purple on the tail coordinate
+        self.j = 0
+        def get_purple():
+            CYCLE = 16
+            if not hasattr(get_purple, 'colors'):
+                get_purple.colors = []
+                for i in range(CYCLE):
+                    r = int(96 + (173 - 96) * (i / CYCLE))
+                    g = int(1 + (78 - 1) * (i / CYCLE))
+                    b = int(172 + (253 - 172) * (i / CYCLE))
+                    get_purple.colors.append((r, g, b))
+                for i in range(CYCLE):
+                    r = int(173 - (173 - 96) * (i / CYCLE))
+                    g = int(78 - (78 - 1) * (i / CYCLE))
+                    b = int(253 - (253 - 172) * (i / CYCLE))
+                    get_purple.colors.append((r, g, b))
+            return get_purple.colors[self.j % (CYCLE * 2)]
 
-            # Shadow circle (slightly larger than body)
-            shadow_radius = int(cell_size * 0.45)
-            pygame.draw.circle(self.window, shadow_color, (center_x, center_y), shadow_radius)
 
-        # Draw body circles (from tail to head)
-        for i, segment in enumerate(self.snake_segments):
-            y, x = segment
-            center_x = x * cell_size + center_offset
-            center_y = y * cell_size + center_offset
+        # i need to calculate coordinate of the tail
+        # i now the self.cell_size = 80
+        # i now the coordinate of tail
 
-            # Make head slightly larger than body segments
-            if i == len(self.snake_segments) - 1:  # Head
-                body_radius = int(cell_size * 0.4)
-            else:
-                body_radius = int(cell_size * 0.35)
 
-            # Draw gradient body (simplified as a solid color for now)
-            pygame.draw.circle(self.window, body_color_outer, (center_x, center_y), body_radius)
+        def draw_segment(start_pos, end_pos):
+            start_y, start_x = start_pos
+            end_y, end_x = end_pos
 
-        # Draw eyes on the head
-        head_y, head_x = self.snake_segments[-1]
-        head_center_x = head_x * cell_size + center_offset
-        head_center_y = head_y * cell_size + center_offset
+            start_center_y = start_y * self.cell_size + self.cell_size // 2
+            start_center_x = start_x * self.cell_size + self.cell_size // 2
 
-        # Determine eye positions based on movement direction
-        # 0: left, 1: up, 2: right, 3: down
-        eye_offsets = [
-            [(0, -0.15), (0, 0.15)],  # left
-            [(-0.15, 0), (0.15, 0)],  # up
-            [(0, -0.15), (0, 0.15)],  # right
-            [(-0.15, 0), (0.15, 0)]   # down
-        ]
+            dir_y = end_y - start_y
+            dir_x = end_x - start_x
 
-        dir_idx = self.moving_dir
-        for offset in eye_offsets[dir_idx]:
-            eye_x = int(head_center_x + offset[1] * cell_size)
-            eye_y = int(head_center_y + offset[0] * cell_size)
+            for i in range(10):
+                self.j += 1
+                center_y = start_center_y + 8 * i * dir_y
+                center_x = start_center_x + 8 * i * dir_x
+                pygame.draw.circle(self.window, get_purple(), (center_y, center_x), 18)
 
-            # White part of eye
-            pygame.draw.circle(self.window, (255, 255, 255), (eye_x, eye_y), cell_size // 10)
-
-            # Pupil (black part)
-            pupil_offset_x = 2 if dir_idx == 2 else (-2 if dir_idx == 0 else 0)
-            pupil_offset_y = 2 if dir_idx == 3 else (-2 if dir_idx == 1 else 0)
-            pygame.draw.circle(self.window, (0, 0, 0),
-                            (eye_x + pupil_offset_x, eye_y + pupil_offset_y),
-                            cell_size // 20)
-
-        # Draw food items (apples and peppers)
-        for y in range(self.board.size_y):
-            for x in range(self.board.size_x):
-                cell_value = self.board.get_cell(y, x)
-                if cell_value == self.board.APPLE:
-                    center_x = x * cell_size + center_offset
-                    center_y = y * cell_size + center_offset
-                    pygame.draw.circle(self.window, (0, 200, 0), (center_x, center_y), int(cell_size * 0.3))
-                elif cell_value == self.board.PEPPER:
-                    center_x = x * cell_size + center_offset
-                    center_y = y * cell_size + center_offset
-                    pygame.draw.circle(self.window, (200, 0, 0), (center_x, center_y), int(cell_size * 0.3))
+        for i in range(len(self.snake_segments) - 1):
+                draw_segment(self.snake_segments[i], self.snake_segments[i + 1])
 
         pygame.display.flip() # call after wrote something to the screen to update it

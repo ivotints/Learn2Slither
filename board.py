@@ -21,15 +21,12 @@ class init_board:
     HEAD = 2
     APPLE = 3
     PEPPER = 4
+    DIRECTIONS = {(0, -1), (-1, 0), (0, 1), (1, 0)}  #LEFT, UP, RIGHT, DOWN
 
     def __init__(self):
-        self.size_y = 10  # number of vertical cells
-        self.size_x = 10  # number of horisontal cells
-
-        # fill the array (table) with EMPTY
-        self.table = np.full(
-            (self.size_y, self.size_x),
-            self.EMPTY, dtype='int8')
+        self.size_y = 10
+        self.size_x = 10
+        self.table = np.full((self.size_y, self.size_x),self.EMPTY, dtype='int8')
 
         # set head to random place
         self.head_y, self.head_x = self.set_cell_to_random_empty(self.HEAD)
@@ -38,8 +35,7 @@ class init_board:
         # lets count amount of empty cells around snake and get a list of empty coordinates
 
         empty_cells = []
-        directions = {(0, -1), (-1, 0), (0, 1), (1, 0)}
-        for dir in directions:
+        for dir in self.DIRECTIONS:
             new_y = self.head_y + dir[0]
             new_x = self.head_x + dir[1]
             if self.is_in_table(new_y, new_x) and self.is_empty(new_y, new_x):
@@ -53,7 +49,7 @@ class init_board:
         # now set second tail segment
 
         empty_cells = []
-        for dir in directions:
+        for dir in self.DIRECTIONS:
             new_y = tail_y + dir[0]
             new_x = tail_x + dir[1]
             if self.is_in_table(new_y, new_x) and self.is_empty(new_y, new_x):
