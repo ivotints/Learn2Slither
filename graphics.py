@@ -92,7 +92,10 @@ class init_graphics:
             get_purple.counter += 1
             return get_purple.colors[get_purple.counter % (CYCLE * 2)]
 
-        def draw_segment(start_pos, end_pos, size):
+        def get_shadow():
+            return (10, 10, 10)
+
+        def draw_segment(start_pos, end_pos, size, color_function):
             start_y, start_x = start_pos
             end_y, end_x = end_pos
 
@@ -105,14 +108,15 @@ class init_graphics:
             for i in range(10):
                 center_y = start_center_y + 8 * i * dir_y
                 center_x = start_center_x + 8 * i * dir_x
-                pygame.draw.circle(self.window, get_purple(), (center_y, center_x), size)
-
-        # for i in range(len(self.snake_segments) - 1):
-        #         draw_segment(self.snake_segments[i], self.snake_segments[i + 1], 18)
+                pygame.draw.circle(self.window, color_function(), (center_y, center_x), size)
 
         for i in range(len(self.snake_segments) - 1):
-                draw_segment(self.snake_segments[i], self.snake_segments[i + 1], min(30, 16 + len(self.snake_segments)))
+                draw_segment(self.snake_segments[i], self.snake_segments[i + 1], min(30, 16 + len(self.snake_segments)) + 4, get_shadow)
 
+        for i in range(len(self.snake_segments) - 1):
+                draw_segment(self.snake_segments[i], self.snake_segments[i + 1], min(30, 16 + len(self.snake_segments)), get_purple)
+
+        # now i need to dray eyes with respect to direction of movement
 
 
 
