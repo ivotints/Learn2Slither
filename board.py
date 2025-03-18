@@ -37,6 +37,7 @@ class init_board:
         self.set_cell_to_random_empty(self.APPLE)
         self.set_cell_to_random_empty(self.APPLE)
         self.set_cell_to_random_empty(self.PEPPER)
+        print(self.table)
 
     def _place_adjacent_segment(self, y, x):
         """Find and return coordinates for a new segment adjacent to given position"""
