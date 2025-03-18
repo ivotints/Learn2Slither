@@ -29,12 +29,8 @@ def main():
                     elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
                         board.make_move(board.DIRECTIONS[3])
 
-            # for graphics i will have to update segment list and direction of movement.
             graphics.draw_board()
-
-            # then I need to listen for the input
-
-            graphics.clock.tick(60) # 60 fps
+            graphics.clock.tick(60)
         pygame.quit()
 
 if __name__ == "__main__":

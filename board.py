@@ -33,13 +33,13 @@ class init_board:
         self.tail_x = 0
         self.moving_dir = (0, -1)
         self.length = 3
-        self.snake_segments = [] # whole snake will be stored here from tail to head
+        self.snake_segments = [] # whole snake will be stored here from tail to head in tuple (y, x)
 
 
         self._init_snake()
+        self.set_cell_to_random_empty(self.APPLE)
+        self.set_cell_to_random_empty(self.APPLE)
 
-        self.set_cell_to_random_empty(self.APPLE)
-        self.set_cell_to_random_empty(self.APPLE)
         self.set_cell_to_random_empty(self.PEPPER)
         print(self.table)
 
@@ -58,7 +58,7 @@ class init_board:
         if (y, x) == (self.head_y, self.head_x):
             tmp = random.randint(0, len(empty_cells) - 1)
             a, b = empty_cells[tmp]
-            self.moving_dir = a - y, b - x
+            self.moving_dir = y - a, x - b
             return empty_cells[tmp]
 
         return empty_cells[random.randint(0, len(empty_cells) - 1)]
@@ -147,13 +147,73 @@ class init_board:
             print("death from border")
         cell = self.get_cell(new_y, new_x)
         if cell == self.TAIL:
-            if not (new_y == self.tail_y and new_x == self.tail_x):
+            if not (new_y == self.tail_y and new_x == self.tail_x) or self.length == 2:
                 print("death from cannibalism")
-            elif self.length == 2:
-                print("death from cannibalism")
-        # if it is food
+            else:
+                self.snake_segments.append((new_y, new_x))
+                self.set_cell(self.head_y, self.head_x, self.TAIL)
+
+                self.set_cell(self.tail_y, self.tail_x, self.EMPTY)
+                self.snake_segments = self.snake_segments[1:]
+                self.tail_y, self.tail_x = self.snake_segments[0]
+
+                self.head_y = new_y
+                self.head_x = new_x
+                self.set_cell(new_y, new_x, self.HEAD)
+                self.moving_dir = dir
+
         elif cell == self.APPLE:
-            # add length
-            pass
+            self.length += 1
+            self.snake_segments.append((new_y, new_x))
+            self.set_cell(self.head_y, self.head_x, self.TAIL)
+            self.head_y = new_y
+            self.head_x = new_x
+            self.set_cell(new_y, new_x, self.HEAD)
+            self.moving_dir = dir
+            self.set_cell_to_random_empty(self.APPLE)
+
+        elif cell == self.PEPPER:
+            self.length -= 1
+            if self.length < 1:
+                print("death from pepper")
+            self.snake_segments.append((new_y, new_x))
+
+            tmp_y, tmp_x = self.snake_segments[0]
+            self.set_cell(tmp_y, tmp_x, self.EMPTY)
+            self.snake_segments = self.snake_segments[1:]
+            tmp_y, tmp_x = self.snake_segments[0]
+            self.set_cell(tmp_y, tmp_x, self.EMPTY)
+            self.snake_segments = self.snake_segments[1:]
+            self.tail_y, self.tail_x = self.snake_segments[0]
+
+
+            if (self.length > 1):
+                self.set_cell(self.head_y, self.head_x, self.TAIL)
+            self.head_y = new_y
+            self.head_x = new_x
+            self.set_cell(new_y, new_x, self.HEAD)
+            self.moving_dir = dir
+            self.set_cell_to_random_empty(self.PEPPER)
+
+        elif cell == self.EMPTY:
+            self.snake_segments.append((new_y, new_x))
+            self.set_cell(self.head_y, self.head_x, self.TAIL)
+
+            self.set_cell(self.tail_y, self.tail_x, self.EMPTY)
+            self.snake_segments = self.snake_segments[1:]
+            self.tail_y, self.tail_x = self.snake_segments[0]
+
+            self.head_y = new_y
+            self.head_x = new_x
+            self.set_cell(new_y, new_x, self.HEAD)
+            self.moving_dir = dir
+        # print(self.table)
+        # print(self.head_x, self.head_y)
+        # print(self.tail_x, self.tail_y)
+
+
+
+
+
 
 

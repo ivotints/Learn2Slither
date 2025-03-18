@@ -96,10 +96,18 @@ class init_graphics:
                 pygame.draw.circle(self.window, color_function(), (center_x, center_y), size)
 
         for i in range(len(self.board.snake_segments) - 1):
-            draw_segment(self.board.snake_segments[i], self.board.snake_segments[i + 1], min(30, 16 + len(self.board.snake_segments)) + 4, get_shadow)
+            draw_segment(self.board.snake_segments[i], self.board.snake_segments[i + 1], min(30, 17 + len(self.board.snake_segments) // 2) + 4, get_shadow) # adjust growth rate
 
         for i in range(len(self.board.snake_segments) - 1):
-            draw_segment(self.board.snake_segments[i], self.board.snake_segments[i + 1], min(30, 16 + len(self.board.snake_segments)), get_purple)
+            draw_segment(self.board.snake_segments[i], self.board.snake_segments[i + 1], min(30, 17 + len(self.board.snake_segments) // 2), get_purple)
+
+        if (len(self.board.snake_segments) < 2):
+            start_y, start_x = self.board.snake_segments[-1]
+            start_center_x = start_x * self.cell_size + self.cell_size // 2
+            start_center_y = start_y * self.cell_size + self.cell_size // 2
+            pygame.draw.circle(self.window, get_shadow(), (start_center_x, start_center_y), min(30, 17 + len(self.board.snake_segments) // 2) + 4)
+            pygame.draw.circle(self.window, get_purple(), (start_center_x, start_center_y), min(30, 17 + len(self.board.snake_segments) // 2))
+
 
         self._draw_snake_eyes()
 
@@ -110,16 +118,16 @@ class init_graphics:
         dir_y, dir_x = self.board.moving_dir
         if dir_x == -1:  # LEFT
             eye_offsets = [(-8, 0), (8, 0)]
-            pupil_shift = (0, 3)
+            pupil_shift = (0, -3)
         elif dir_y == -1:  # UP
             eye_offsets = [(0, -8), (0, 8)]
-            pupil_shift = (3, 0)
+            pupil_shift = (-3, 0)
         elif dir_x == 1:  # RIGHT
             eye_offsets = [(-8, 0), (8, 0)]
-            pupil_shift = (0, -3)
+            pupil_shift = (0, 3)
         else:  # DOWN
             eye_offsets = [(0, -8), (0, 8)]
-            pupil_shift = (-3, 0)
+            pupil_shift = (3, 0)
 
         for offset_y, offset_x in eye_offsets:
             pygame.draw.circle(self.window, (255, 255, 255),
@@ -135,8 +143,8 @@ class init_graphics:
         radius = self.cell_size
         bokeh_surface = pygame.Surface((radius, radius), pygame.SRCALPHA)
         bokeh_surface_white = pygame.Surface((radius, radius), pygame.SRCALPHA)
-        self._create_bokeh_surface(bokeh_surface, radius // 2, radius // 4, color)
-        self._create_bokeh_surface(bokeh_surface_white, radius // 2, radius // 6, (255, 255, 255))
+        self._create_bokeh_surface(bokeh_surface, radius // 4, radius // 6, color)                  # to change food size
+        self._create_bokeh_surface(bokeh_surface_white, radius // 6, radius // 10, (255, 255, 255)) # to change food size, change radius
         bokeh_surface.blit(bokeh_surface_white, (0, 0))
         return bokeh_surface
 
