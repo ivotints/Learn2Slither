@@ -21,7 +21,7 @@ class init_board:
     HEAD = 2
     APPLE = 3
     PEPPER = 4
-    DIRECTIONS = {(0, -1), (-1, 0), (0, 1), (1, 0)}  #LEFT, UP, RIGHT, DOWN
+    DIRECTIONS = [(0, -1), (-1, 0), (0, 1), (1, 0)]  #LEFT, UP, RIGHT, DOWN
 
     def __init__(self):
         self.size_y = 10
@@ -31,6 +31,10 @@ class init_board:
         self.head_x = 0
         self.tail_y = 0
         self.tail_x = 0
+        self.moving_dir = (0, -1)
+        self.length = 3
+        self.snake_segments = [] # whole snake will be stored here from tail to head
+
 
         self._init_snake()
 
@@ -54,7 +58,7 @@ class init_board:
         if (y, x) == (self.head_y, self.head_x):
             tmp = random.randint(0, len(empty_cells) - 1)
             a, b = empty_cells[tmp]
-            self.initial_direction = a - y, b - x
+            self.moving_dir = a - y, b - x
             return empty_cells[tmp]
 
         return empty_cells[random.randint(0, len(empty_cells) - 1)]
@@ -71,6 +75,10 @@ class init_board:
         self.tail_y, self.tail_x = self._place_adjacent_segment(
             self.second_tail_y, self.second_tail_x)
         self.set_cell(self.tail_y, self.tail_x, self.TAIL)
+
+        self.snake_segments.append((self.tail_y, self.tail_x))
+        self.snake_segments.append((self.second_tail_y, self.second_tail_x))
+        self.snake_segments.append((self.head_y, self.head_x))
 
 
     def is_in_table(self, y, x):
@@ -130,4 +138,22 @@ class init_board:
                 if self.set_to_empty(y, x, value):
                     return (y, x)
         raise RuntimeError("No empty cells found in the board")
+
+    def make_move(self, dir):
+        # first i need to check where do i move.
+        new_y = dir[0] + self.head_y
+        new_x = dir[1] + self.head_x
+        if not self.is_in_table(new_y, new_x):
+            print("death from border")
+        cell = self.get_cell(new_y, new_x)
+        if cell == self.TAIL:
+            if not (new_y == self.tail_y and new_x == self.tail_x):
+                print("death from cannibalism")
+            elif self.length == 2:
+                print("death from cannibalism")
+        # if it is food
+        elif cell == self.APPLE:
+            # add length
+            pass
+
 

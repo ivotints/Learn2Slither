@@ -12,19 +12,9 @@ class init_graphics:
         pygame.display.set_caption("Learn2Slither")
         self.clock = pygame.time.Clock()
         self.saved_board = None
-        self.moving_dir = self.board.initial_direction
-        self.snake_segments = self.get_initial_snake_segments() # whole snake will be stored here from tail to head
         self.cell_size = self.window.get_width() // self.board.size_x  # 80
         self.green_bokeh = None
         self.red_bokeh = None
-
-
-    def get_initial_snake_segments(self):
-        snake_segments = []
-        snake_segments.append((self.board.tail_y, self.board.tail_x))
-        snake_segments.append((self.board.second_tail_y, self.board.second_tail_x))
-        snake_segments.append((self.board.head_y, self.board.head_x))
-        return snake_segments
 
     def _draw_initial_board(self):
         """Draws initial board without snake and food"""
@@ -105,11 +95,11 @@ class init_graphics:
                 center_y = start_center_y + 8 * i * dir_y
                 pygame.draw.circle(self.window, color_function(), (center_x, center_y), size)
 
-        for i in range(len(self.snake_segments) - 1):
-            draw_segment(self.snake_segments[i], self.snake_segments[i + 1], min(30, 16 + len(self.snake_segments)) + 4, get_shadow)
+        for i in range(len(self.board.snake_segments) - 1):
+            draw_segment(self.board.snake_segments[i], self.board.snake_segments[i + 1], min(30, 16 + len(self.board.snake_segments)) + 4, get_shadow)
 
-        for i in range(len(self.snake_segments) - 1):
-            draw_segment(self.snake_segments[i], self.snake_segments[i + 1], min(30, 16 + len(self.snake_segments)), get_purple)
+        for i in range(len(self.board.snake_segments) - 1):
+            draw_segment(self.board.snake_segments[i], self.board.snake_segments[i + 1], min(30, 16 + len(self.board.snake_segments)), get_purple)
 
         self._draw_snake_eyes()
 
@@ -117,7 +107,7 @@ class init_graphics:
         head_center_x = self.board.head_x * self.cell_size + self.cell_size // 2
         head_center_y = self.board.head_y * self.cell_size + self.cell_size // 2
 
-        dir_y, dir_x = self.moving_dir
+        dir_y, dir_x = self.board.moving_dir
         if dir_x == -1:  # LEFT
             eye_offsets = [(-8, 0), (8, 0)]
             pupil_shift = (0, 3)
