@@ -23,12 +23,7 @@ Training: The agent learns by exploring different actions, receiving rewards, an
 Model Saving: The learned state can be saved/exported for future use, and models must be submitted in the git repository.
 Evaluation Mode: The agent can run without learning to test a trained model. Graphical and terminal outputs can be disabled to speed up training.
 
-Modular Structure: The program should be well-structured for easy evaluation, with separate modules communicating efficiently.
-Submission: Submit the board, agent, and models via Git. Only repository contents will be evaluated.
 Models Folder: Include trained models in a chosen file format (e.g., .txt), showing different training stages.
-Training: Train multiple models (1, 10, and 100 sessions) to demonstrate learning progress. Training takes time, so prepare in advance.
-Evaluation: You must be able to load and test saved models without additional learning to verify performance.
-Goal: The snake should reach a length of 10+ and survive as long as possible.
 ```
 Snake vision:
           W
@@ -61,23 +56,23 @@ Inputs that I would give:
     * Amount of inputs should be fixed for different map size other than 10 (bonus)
 
     * Distance to left Wall
-    * Distance to right Wall
     * Distance to top Wall
+    * Distance to right Wall
     * Distance to down Wall
 
     * Distance to left closest obstacle (Tail or Wall)
-    * Distance to right closest obstacle (Tail or Wall)
     * Distance to top closest obstacle (Tail or Wall)
+    * Distance to right closest obstacle (Tail or Wall)
     * Distance to down closest obstacle (Tail or Wall)
 
     * Distance to left Food
-    * Distance to right Food
     * Distance to top Food
+    * Distance to right Food
     * Distance to down Food
 
     * Distance to left Pepper
-    * Distance to right Pepper
     * Distance to top Pepper
+    * Distance to right Pepper
     * Distance to down Pepper
 
     Output:
@@ -85,9 +80,4 @@ Inputs that I would give:
     * Move Left
     * Move Right
     * Move Up
-    * Move Down (can be one neuron with output encoded as 0 - 0.25 - 0.5 - 0.75 - 1, where each range represent Left, Up, Right, Down direction. But better test it in 2 versions. with 4 and 1 neuron)
-
-    # Version 2 just give whole vertical and horisontal lines.
-    * Each node (total 19 of them) will get some value like 0 for nothing, 1 for tail, 2 for head, 3 for apple, 4 for pepper.
-    This approach will not pass bonus with changing the game area, but should be more smarter snake.
-
+    * Move Down

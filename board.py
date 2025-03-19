@@ -41,7 +41,6 @@ class init_board:
         self.set_cell_to_random_empty(self.APPLE)
 
         self.set_cell_to_random_empty(self.PEPPER)
-        print(self.table)
 
     def _place_adjacent_segment(self, y, x):
         """Find and return coordinates for a new segment adjacent to given position"""
@@ -137,18 +136,17 @@ class init_board:
             for x in range(self.size_x):
                 if self.set_to_empty(y, x, value):
                     return (y, x)
-        raise RuntimeError("No empty cells found in the board")
 
     def make_move(self, dir):
         # first i need to check where do i move.
         new_y = dir[0] + self.head_y
         new_x = dir[1] + self.head_x
         if not self.is_in_table(new_y, new_x):
-            print("death from border")
+            return True
         cell = self.get_cell(new_y, new_x)
         if cell == self.TAIL:
             if not (new_y == self.tail_y and new_x == self.tail_x) or self.length == 2:
-                print("death from cannibalism")
+                return True
             else:
                 self.snake_segments.append((new_y, new_x))
                 self.set_cell(self.head_y, self.head_x, self.TAIL)
@@ -175,7 +173,7 @@ class init_board:
         elif cell == self.PEPPER:
             self.length -= 1
             if self.length < 1:
-                print("death from pepper")
+                return True
             self.snake_segments.append((new_y, new_x))
 
             tmp_y, tmp_x = self.snake_segments[0]
@@ -207,13 +205,4 @@ class init_board:
             self.head_x = new_x
             self.set_cell(new_y, new_x, self.HEAD)
             self.moving_dir = dir
-        # print(self.table)
-        # print(self.head_x, self.head_y)
-        # print(self.tail_x, self.tail_y)
-
-
-
-
-
-
-
+        return False
