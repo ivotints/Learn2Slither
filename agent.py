@@ -2,6 +2,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 import os
+from collections import deque
+import random
 
 class SnakeAgent:
     def __init__(self, board):
@@ -10,6 +12,20 @@ class SnakeAgent:
         self.output_size = 4  # LEFT, UP, RIGHT, DOWN
         self.model = self._create_model()
         self.model_dir = "models"
+
+        self.epsilon = 1.0
+        self.epsilon_min = 0.0001
+        self.epsilon_decay = 0.995
+
+        self.learning_rate = 0.001
+
+        self.memory = deque(maxlen = 2000)
+        self.target_model = self._create_model()
+        self.gamma = 0.95
+        self.update_target_counter = 0
+
+
+
         if not os.path.exists(self.model_dir):
             os.makedirs(self.model_dir)
 
@@ -19,8 +35,12 @@ class SnakeAgent:
             keras.layers.Dense(16, activation='relu'),
             keras.layers.Dense(self.output_size, activation='softmax')
         ])
-        model.compile(optimizer='adam', loss='categorical_crossentropy')
+        model.compile(optimizer='adam', loss='mse')
         return model
+
+    def update_target_model(self):
+        """Update the target model with weights from the primary model"""
+        self.target_model.set_weights(self.model.get_weights())
 
     def get_state(self):
         """Get all distances as neural network input"""
@@ -75,3 +95,76 @@ class SnakeAgent:
             if cell == target:
                 return distance
 
+    def get_direction(self, state):
+        """Choose direction based on the current state using epsilon-greedy policy"""
+        if np.random.rand() <= self.epsilon:
+            # my snake can move in 4 directions, but if it goes back, it dies immediately. Should I keep this random?
+            action = random.randint(0, self.output_size - 1)
+        else:
+            state_tensor = np.expand_dims(state, axis=0)
+            q_values = self.model.predict(state_tensor, verbose=0)[0]
+            action = np.argmax(q_values)
+
+        return self.board.DIRECTIONS[action]
+
+
+    def train(self, state, direction, reward, next_state, done):
+        self.remember(state, direction, reward, next_state, done)
+        self.replay(32)
+        return next_state
+
+    def remember(self, state, action, reward, next_state, done):
+        action_idx = self.board.DIRECTIONS.index(action)
+        self.memory.append((state, action_idx, reward, next_state, done))
+
+    def save_model(self, episode):
+        """Save the model to disk"""
+        model_path = os.path.join(self.model_dir, f"snake_model_{episode}.h5")
+        self.model.save(model_path)
+        print(f"Model saved to {model_path}")
+
+    def replay(self, batch_size):
+        """Train the model on a batch of experiences from memory"""
+        if len(self.memory) < batch_size:
+            return
+
+        minibatch = random.sample(self.memory, batch_size)
+
+        states = np.array([experience[0] for experience in minibatch])
+        next_states = np.array([experience[3] for experience in minibatch])
+
+        # Predict Q-values for current states and next states
+        current_q_values = self.model.predict(states, verbose=0)
+        next_q_values = self.target_model.predict(next_states, verbose=0)
+
+        # Update Q-values based on the Bellman equation
+        for i, (state, action_idx, reward, next_state, done) in enumerate(minibatch):
+            if done:
+                target = reward
+            else:
+                target = reward + self.gamma * np.max(next_q_values[i])
+
+            current_q_values[i][action_idx] = target
+
+        # Train the model
+        self.model.fit(states, current_q_values, epochs=1, verbose=0)
+
+        # Decay epsilon
+        if self.epsilon > self.epsilon_min:
+            self.epsilon *= self.epsilon_decay
+
+        # Update the target network periodically
+        self.update_target_counter += 1
+        if self.update_target_counter > 100:
+            self.update_target_model()
+            self.update_target_counter = 0
+
+    def load_model(self, model_path):
+        """Load a model from disk"""
+        if os.path.exists(model_path):
+            self.model = keras.models.load_model(model_path)
+            self.target_model = keras.models.load_model(model_path)
+            print(f"Model loaded from {model_path}")
+            self.epsilon = self.epsilon_min  # Set to minimum for using a trained model
+        else:
+            print(f"No model found at {model_path}, using new model")

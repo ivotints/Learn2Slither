@@ -10,6 +10,8 @@ from agent import SnakeAgent
 def setup_argparser():
     parser = argparse.ArgumentParser(description="Snake game with RL")
     parser.add_argument('--no_graphics', '-ng', action='store_true',  help='Turn off graphics')
+    parser.add_argument('--evaluation_mode', '-e', action='store_true', help='Turn off training')
+    parser.add_argument('--load_model', '-lm', type=str, help='Path to model to load')
     return parser
 
 def main():
@@ -18,6 +20,10 @@ def main():
     board = init_board()
     agent = SnakeAgent(board)
     display_grapics = not args.no_graphics
+    evaluation_mode = args.evaluation_mode
+
+    if args.load_model:
+        agent.load_model(args.load_model)
 
     if display_grapics:
         graphics = init_graphics(board)
@@ -27,84 +33,107 @@ def main():
         for episode in range (episodes):
             state = agent.get_state()
             total_reward = 0
+            reward = 0
             running = True
             done = False
             max_length = 3
+            steps = 0
+            max_steps = 300
 
-            while running and not done:
+            while running and not done and steps < max_steps:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
                             running = False
+
                 direction = agent.get_direction(state)
 
                 old_length = board.length
                 done = board.make_move(direction)
+                next_state = agent.get_state()
 
                 if done:
-                    total_reward += -20.0
+                    reward = -20.0
                 elif board.length == old_length:
-                    total_reward += -0.1
+                    reward = -0.1
                 elif board.length > old_length:
-                    total_reward += 2.0
+                    reward = 2.0
                     max_length = max(board.length, max_length)
                 else:
-                    total_reward += -2.0
+                    reward = -2.0
 
-                # i dont know how to continue training
+                total_reward += reward
+
+                if not evaluation_mode:
+                    state = agent.train(state, direction, reward, next_state, done)
+                else:
+                    state = next_state
+
+                steps += 1
 
                 if not done:
                     graphics.draw_board()
                     graphics.clock.tick(600)
 
-            print(f"Episode {episode} finished with reward {total_reward} and max length {max_length}")
-            if (episode + 1) % save_frequency == 0:
+            print(f"Episode {episode} finished with reward {total_reward:.2f}, max length {max_length}, steps {steps}")
+            if not evaluation_mode and (episode + 1) % save_frequency == 0:
                 agent.save_model(episode + 1)
 
             board = init_board()
             agent.board = board
             graphics.board = board
 
-        agent.save_model(episodes)
+        if not evaluation_mode:
+            agent.save_model(episodes)
         pygame.quit()
     else:
-        episodes = 10000
-        save_frequency = 100
+        episodes = 100000000
+        save_frequency = 100000
 
         for episode in range (episodes):
             state = agent.get_state()
             total_reward = 0
             done = False
             max_length = 3
+            steps = 0
+            max_steps = 300
+            reward = 0
 
-            while not done:
+            while not done and steps < max_steps:
                 direction = agent.get_direction(state)
 
                 old_length = board.length
                 done = board.make_move(direction)
+                next_state = agent.get_state() # what if move was deadly? state will not be updated.
 
                 if done:
-                    total_reward += -20.0
+                    reward = -20.0
                 elif board.length == old_length:
-                    total_reward += -0.1
+                    reward = -0.1
                 elif board.length > old_length:
-                    total_reward += 2.0
+                    reward = 2.0
                     max_length = max(board.length, max_length)
                 else:
-                    total_reward += -2.0
+                    reward = -2.0
 
-                # i dont know how to continue training
+                total_reward += reward
 
-            print(f"Episode {episode} finished with reward {total_reward} and max length {max_length}")
-            if (episode + 1) % save_frequency == 0:
-                agent.save_model(episode + 1)
+                if not evaluation_mode:
+                    state = agent.train(state, direction, reward, next_state, done)
+                else:
+                    state = next_state
+                steps += 1
+            print(f"Episode {episode} finished with reward {total_reward:.2f}, max length {max_length}, steps {steps}")
+            # if not evaluation_mode and (episode + 1) % save_frequency == 0:
+            #     agent.save_model(episode + 1)
 
             board = init_board()
             agent.board = board
 
-        agent.save_model(episodes)
+        if not evaluation_mode:
+            agent.save_model(episodes)
 
 if __name__ == "__main__":
     main()
