@@ -19,121 +19,83 @@ def main():
     args = parser.parse_args()
     board = init_board()
     agent = SnakeAgent(board)
-    display_grapics = not args.no_graphics
+    display_graphics = not args.no_graphics
     evaluation_mode = args.evaluation_mode
 
     if args.load_model:
         agent.load_model(args.load_model)
 
-    if display_grapics:
+    if display_graphics:
         graphics = init_graphics(board)
-        episodes = 10000
-        save_frequency = 100
 
-        for episode in range (episodes):
-            state = agent.get_state()
-            total_reward = 0
-            reward = 0
-            running = True
-            done = False
-            max_length = 3
-            steps = 0
-            max_steps = 300
+    episodes = 10000
+    save_frequency = 100
 
-            while running and not done and steps < max_steps:
+    for episode in range (episodes):
+        state = agent.get_state()
+        total_reward = 0
+        reward = 0
+        running = True
+        done = False
+        max_length = 3
+        steps = 0
+        steps_no_food = 0
+        max_steps = 300 # to prevent loops
+
+        while running and not done and steps_no_food < max_steps:
+            if display_graphics:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
                             running = False
+            if not running:
+                break
 
-                direction = agent.get_direction(state)
+            direction = agent.get_direction(state)
+            old_length = board.length
+            done = board.make_move(direction)
+            next_state = agent.get_state() # if move was deadly state will not be updated.
 
-                old_length = board.length
-                done = board.make_move(direction)
-                next_state = agent.get_state()
+            if done:
+                reward = -20.0
+            elif board.length == old_length:
+                reward = -0.1
+            elif board.length > old_length:
+                reward = 2.0
+                steps_no_food = 0
+                max_length = max(board.length, max_length)
+            else:
+                reward = -2.0
 
-                if done:
-                    reward = -20.0
-                elif board.length == old_length:
-                    reward = -0.1
-                elif board.length > old_length:
-                    reward = 2.0
-                    max_length = max(board.length, max_length)
-                else:
-                    reward = -2.0
+            total_reward += reward
 
-                total_reward += reward
+            if not evaluation_mode:
+                state = agent.train(state, direction, reward, next_state, done)
+            else:
+                state = next_state
 
-                if not evaluation_mode:
-                    state = agent.train(state, direction, reward, next_state, done)
-                else:
-                    state = next_state
+            steps += 1
+            steps_no_food += 1
 
-                steps += 1
+            if display_graphics and not done:
+                graphics.draw_board()
+                graphics.clock.tick(2)
 
-                if not done:
-                    graphics.draw_board()
-                    graphics.clock.tick(6)
+        print(f"Episode {episode} finished with reward {total_reward:.2f}, max length {max_length}, steps {steps}")
+        if not evaluation_mode and (episode + 1) % save_frequency == 0:
+            agent.save_model(episode + 1)
 
-            print(f"Episode {episode} finished with reward {total_reward:.2f}, max length {max_length}, steps {steps}")
-            if not evaluation_mode and (episode + 1) % save_frequency == 0:
-                agent.save_model(episode + 1)
-
-            board = init_board()
-            agent.board = board
+        board = init_board()
+        agent.board = board
+        if display_graphics:
             graphics.board = board
 
-        if not evaluation_mode:
-            agent.save_model(episodes)
+    if not evaluation_mode:
+        agent.save_model(episodes)
+    if display_graphics:
         pygame.quit()
-    else:
-        episodes = 1000000
-        save_frequency = 100
-
-        for episode in range (episodes):
-            state = agent.get_state()
-            total_reward = 0
-            done = False
-            max_length = 3
-            steps = 0
-            max_steps = 300
-            reward = 0
-
-            while not done and steps < max_steps:
-                direction = agent.get_direction(state)
-
-                old_length = board.length
-                done = board.make_move(direction)
-                next_state = agent.get_state() # if move was deadly state will not be updated.
-
-                if done:
-                    reward = -20.0
-                elif board.length == old_length:
-                    reward = -0.1
-                elif board.length > old_length:
-                    reward = 2.0
-                    max_length = max(board.length, max_length)
-                else:
-                    reward = -2.0
-
-                total_reward += reward
-
-                if not evaluation_mode:
-                    state = agent.train(state, direction, reward, next_state, done)
-                else:
-                    state = next_state
-                steps += 1
-            print(f"Episode {episode} finished with reward {total_reward:.2f}, max length {max_length}, steps {steps}")
-            if not evaluation_mode and (episode + 1) % save_frequency == 0:
-                agent.save_model(episode + 1)
-
-            board = init_board()
-            agent.board = board
-
-        if not evaluation_mode:
-            agent.save_model(episodes)
 
 if __name__ == "__main__":
     main()

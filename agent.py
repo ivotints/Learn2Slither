@@ -26,7 +26,7 @@ class SnakeAgent:
         model = keras.Sequential([
             keras.layers.Dense(32, input_shape=(self.input_size,), activation='relu'),
             keras.layers.Dense(16, activation='relu'),
-            keras.layers.Dense(self.output_size, activation='softmax')
+            keras.layers.Dense(self.output_size, activation='softmax') #
         ])
         model.compile(optimizer='adam', loss='mse')
         return model
@@ -91,7 +91,6 @@ class SnakeAgent:
     def get_direction(self, state):
         """Choose direction based on the current state using epsilon-greedy policy"""
         if np.random.rand() <= self.epsilon:
-            # my snake can move in 4 directions, but if it goes back, it dies immediately. Should I keep this random?
             action = random.randint(0, self.output_size - 1)
         else:
             state_tensor = np.expand_dims(state, axis=0)
@@ -113,7 +112,7 @@ class SnakeAgent:
     def save_model(self, episode):
         os.makedirs('models', exist_ok=True)
         model_path = os.path.join('models', f"snake_model_{episode}.keras")
-        self.model.save(model_path, save_format='keras')
+        self.model.save(model_path)
         print(f"Model saved to {model_path}")
 
     def load_model(self, model_path):

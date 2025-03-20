@@ -13,14 +13,13 @@ The snake starts at length 3; eating a green apple increases its length, while e
 Colliding with a wall, its own tail, or dropping to zero length results in a game over.
 The project requires many training sessions and a graphical interface with configurable display speeds and a step-by-step mode.
 
-Snake Vision: The snake only sees in the four cardinal directions from its head. The state is displayed in the terminal using symbols: W (Wall), H (Snake Head), S (Snake Body), G (Green Apple), R (Red Apple), and 0 (Empty Space). Providing extra information beyond this vision incurs a penalty.
+Snake Vision: The snake only sees in the four cardinal directions from its head. Providing extra information beyond this vision incurs a penalty.
 Actions: The agent can take one of four actions—UP, LEFT, DOWN, or RIGHT—based solely on this limited view.
-Display: The environment is shown graphically in a window, while the state and actions are output to the terminal.
 
 Rewards: The snake aims to grow to at least 10 cells and survive. Actions are rewarded or penalized (e.g., eating a green apple = positive, red apple = negative, game over = big negative).
 Q-learning: The agent uses a Q function (Q-table or Neural Network) to evaluate actions. No other models are allowed.
 Training: The agent learns by exploring different actions, receiving rewards, and updating its Q-values iteratively.
-Model Saving: The learned state can be saved/exported for future use, and models must be submitted in the git repository.
+Model Saving: The learned state can be saved/exported for future use.
 Evaluation Mode: The agent can run without learning to test a trained model. Graphical and terminal outputs can be disabled to speed up training.
 
 Models Folder: Include trained models in a chosen file format (e.g., .txt), showing different training stages.
