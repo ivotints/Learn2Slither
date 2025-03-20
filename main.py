@@ -89,8 +89,8 @@ def main():
             agent.save_model(episodes)
         pygame.quit()
     else:
-        episodes = 100000000
-        save_frequency = 100000
+        episodes = 1000000
+        save_frequency = 100
 
         for episode in range (episodes):
             state = agent.get_state()
@@ -126,8 +126,8 @@ def main():
                     state = next_state
                 steps += 1
             print(f"Episode {episode} finished with reward {total_reward:.2f}, max length {max_length}, steps {steps}")
-            # if not evaluation_mode and (episode + 1) % save_frequency == 0:
-            #     agent.save_model(episode + 1)
+            if not evaluation_mode and (episode + 1) % save_frequency == 0:
+                agent.save_model(episode + 1)
 
             board = init_board()
             agent.board = board
@@ -137,3 +137,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# fix : WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`.
+# Model saved to models/snake_model_1900.h5
