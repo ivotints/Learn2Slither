@@ -1,0 +1,4 @@
+Also we need to  change max_steps on max_steps_without_food, and adjust logic
+What is the purpose of target model?
+How can i put main 2 versions with graphics and without together?
+Later i will multithread learning, but not now.

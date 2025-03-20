@@ -11,10 +11,8 @@ class SnakeAgent:
         self.input_size = 16  # 4 walls + 4 obstacles + 4 foods + 4 peppers
         self.output_size = 4  # LEFT, UP, RIGHT, DOWN
         self.model = self._create_model()
-        self.model_dir = "models"
-
         self.epsilon = 1.0
-        self.epsilon_min = 0.0001
+        self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
 
         self.learning_rate = 0.001
@@ -23,11 +21,6 @@ class SnakeAgent:
         self.target_model = self._create_model()
         self.gamma = 0.95
         self.update_target_counter = 0
-
-
-
-        if not os.path.exists(self.model_dir):
-            os.makedirs(self.model_dir)
 
     def _create_model(self):
         model = keras.Sequential([
@@ -118,10 +111,19 @@ class SnakeAgent:
         self.memory.append((state, action_idx, reward, next_state, done))
 
     def save_model(self, episode):
-        """Save the model to disk"""
-        model_path = os.path.join(self.model_dir, f"snake_model_{episode}.h5")
-        self.model.save(model_path)
+        os.makedirs('models', exist_ok=True)
+        model_path = os.path.join('models', f"snake_model_{episode}.keras")
+        self.model.save(model_path, save_format='keras')
         print(f"Model saved to {model_path}")
+
+    def load_model(self, model_path):
+        if os.path.exists(model_path):
+            self.model = keras.models.load_model(model_path)
+            self.target_model = keras.models.load_model(model_path)
+            self.epsilon = self.epsilon_min
+        else:
+            print()
+
 
     def replay(self, batch_size):
         """Train the model on a batch of experiences from memory"""
@@ -158,13 +160,3 @@ class SnakeAgent:
         if self.update_target_counter > 100:
             self.update_target_model()
             self.update_target_counter = 0
-
-    def load_model(self, model_path):
-        """Load a model from disk"""
-        if os.path.exists(model_path):
-            self.model = keras.models.load_model(model_path)
-            self.target_model = keras.models.load_model(model_path)
-            print(f"Model loaded from {model_path}")
-            self.epsilon = self.epsilon_min  # Set to minimum for using a trained model
-        else:
-            print(f"No model found at {model_path}, using new model")

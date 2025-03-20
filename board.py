@@ -110,17 +110,6 @@ class init_board:
         return self.table[y][x]
 
     def set_cell_to_random_empty(self, value):
-        """Set value to a random empty cell and return its coordinates.
-
-        ## Parameters
-            value (int): Value to set in the random empty cell
-
-        ## Returns
-            tuple: (y, x) coordinates of the set cell
-
-        ## Raises
-            RuntimeError: If no empty cell could be found.
-        """
         y = 0
         x = 0
         i = 0

@@ -75,7 +75,7 @@ def main():
 
                 if not done:
                     graphics.draw_board()
-                    graphics.clock.tick(600)
+                    graphics.clock.tick(6)
 
             print(f"Episode {episode} finished with reward {total_reward:.2f}, max length {max_length}, steps {steps}")
             if not evaluation_mode and (episode + 1) % save_frequency == 0:
@@ -106,7 +106,7 @@ def main():
 
                 old_length = board.length
                 done = board.make_move(direction)
-                next_state = agent.get_state() # what if move was deadly? state will not be updated.
+                next_state = agent.get_state() # if move was deadly state will not be updated.
 
                 if done:
                     reward = -20.0
@@ -137,7 +137,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# fix : WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`.
-# Model saved to models/snake_model_1900.h5
