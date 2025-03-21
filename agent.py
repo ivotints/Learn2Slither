@@ -1,8 +1,10 @@
-import numpy as np
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 from tensorflow import keras
-import os
 from collections import deque
+import numpy as np
+from datetime import datetime
 import random
 
 class SnakeAgent:
@@ -74,7 +76,6 @@ class SnakeAgent:
                 return distance
 
     def _find_closest_food(self, y, x, dy, dx, target):
-        """Find distance to closest target in given direction"""
         distance = 0
         while True:
             y += dy
@@ -111,17 +112,25 @@ class SnakeAgent:
 
     def save_model(self, episode):
         os.makedirs('models', exist_ok=True)
-        model_path = os.path.join('models', f"snake_model_{episode}.keras")
+        timestamp = datetime.now().strftime("%Y%m%d_%H:%M")
+        model_path = f"models/snake_model_{episode}_{timestamp}.keras"
         self.model.save(model_path)
         print(f"Model saved to {model_path}")
 
     def load_model(self, model_path):
         if os.path.exists(model_path):
-            self.model = keras.models.load_model(model_path)
-            self.target_model = keras.models.load_model(model_path)
-            self.epsilon = self.epsilon_min
+            try:
+                self.model = keras.models.load_model(model_path)
+                self.target_model = keras.models.load_model(model_path)
+                self.epsilon = self.epsilon_min
+            except Exception as e:
+                import sys
+                print("\033[91mFailed to load model\033[0m")
+                sys.exit(1)
         else:
-            print()
+            import sys
+            print("\033[91mFailed to load model\033[0m")
+            sys.exit(1)
 
 
     def replay(self, batch_size):

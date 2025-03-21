@@ -1,13 +1,23 @@
-Also we need to  change max_steps on max_steps_without_food, and adjust logic
-What is the purpose of target model?
-How can i put main 2 versions with graphics and without together?
-
-
-WARNING:absl:The `save_format` argument is deprecated in Keras 3. We recommend removing this argument as it can be inferred from the file path. Received: save_format=keras
-
-add timestamp to saved models.
+What is the purpose of target model? -> to stabilase learning
 
 Why output should be linear for Q values? Why not softmax?
 
+ epsilon-greedy policy What is that?
 
-Later i will multithread learning, but not now.
+How correctly change epsilon, and till which value? Will be epsilon turned off while evaluating?
+
+What is погоня за движущейся целью
+
+How does target model updated?
+
+Principles of Depp Q learning algorithm
+
+Implement reward based on how close is snake to the food. If it moves in direction of food - reward.
+
+For what do we use reward? For training only?
+
+
+What is Bellman equasion?
+
+Later I will multithread learning, but not now.
+
