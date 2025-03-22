@@ -23,14 +23,17 @@ class SnakeAgent:
         self.target_model = self._create_model()
         self.gamma = 0.95
         self.update_target_counter = 0
+        self.evaluation_mode = False
+        self.folder_name = 'models'
 
     def _create_model(self):
         model = keras.Sequential([
             keras.layers.Dense(32, input_shape=(self.input_size,), activation='relu'),
             keras.layers.Dense(16, activation='relu'),
-            keras.layers.Dense(self.output_size, activation='softmax') #
+            keras.layers.Dense(self.output_size, activation='linear')
         ])
-        model.compile(optimizer='adam', loss='mse')
+        optimizer = tf.keras.optimizers.Adam(0.001, clipvalue=1.0)
+        model.compile(optimizer=optimizer, loss='mse')
         return model
 
     def update_target_model(self):
@@ -91,7 +94,7 @@ class SnakeAgent:
 
     def get_direction(self, state):
         """Choose direction based on the current state using epsilon-greedy policy"""
-        if np.random.rand() <= self.epsilon:
+        if np.random.rand() <= self.epsilon and not self.evaluation_mode:
             action = random.randint(0, self.output_size - 1)
         else:
             state_tensor = np.expand_dims(state, axis=0)
@@ -110,10 +113,19 @@ class SnakeAgent:
         action_idx = self.board.DIRECTIONS.index(action)
         self.memory.append((state, action_idx, reward, next_state, done))
 
+    def set_folder_name(self, name):
+        if os.path.exists(name) and os.path.isdir(name):
+            i = 2
+            while os.path.exists(f"{name}{i}") and os.path.isdir(f"{name}{i}"):
+                i += 1
+            self.folder_name = f"{name}{i}"
+        else:
+            self.folder_name = name
+        os.makedirs(self.folder_name, exist_ok=True)
+
     def save_model(self, episode):
-        os.makedirs('models', exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H:%M")
-        model_path = f"models/snake_model_{episode}_{timestamp}.keras"
+        model_path = os.path.join(self.folder_name, f"snake_model_{episode}_{timestamp}.keras")
         self.model.save(model_path)
         print(f"Model saved to {model_path}")
 

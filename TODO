@@ -1,8 +1,4 @@
-What is the purpose of target model? -> to stabilase learning
-
-Why output should be linear for Q values? Why not softmax?
-
- epsilon-greedy policy What is that?
+epsilon-greedy policy What is that?
 
 How correctly change epsilon, and till which value? Will be epsilon turned off while evaluating?
 
@@ -21,3 +17,4 @@ What is Bellman equasion?
 
 Later I will multithread learning, but not now.
 
+first linearsecond softmaxthird linear with special optimizer

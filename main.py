@@ -13,6 +13,7 @@ def setup_argparser():
     parser.add_argument('--no_graphics', '-ng', action='store_true',  help='Turn off graphics')
     parser.add_argument('--evaluation_mode', '-e', action='store_true', help='Turn off training')
     parser.add_argument('--load_model', '-lm', type=str, help='Path to model to load')
+    parser.add_argument('--name', '-n', type=str, default='model', help='Name of model folder')
     return parser
 
 def main():
@@ -22,26 +23,33 @@ def main():
     agent = SnakeAgent(board)
     display_graphics = not args.no_graphics
     evaluation_mode = args.evaluation_mode
+    agent.evaluation_mode = evaluation_mode
+    agent.set_folder_name(args.name)
+    log_file = open(os.path.join(agent.folder_name, 'logs.txt'), 'a')
+
 
     if args.load_model:
         agent.load_model(args.load_model)
+
 
     if display_graphics:
         graphics = init_graphics(board)
 
     episodes = 10000
     save_frequency = 100
+    running = True
 
     for episode in range (episodes):
         state = agent.get_state()
         total_reward = 0
         reward = 0
-        running = True
         done = False
         max_length = 3
         steps = 0
         steps_no_food = 0
         max_steps = 300 # to prevent loops
+        if not running:
+                break
 
         while running and not done and steps_no_food < max_steps:
             if display_graphics:
@@ -51,8 +59,7 @@ def main():
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
                             running = False
-            if not running:
-                break
+
 
             direction = agent.get_direction(state)
             old_length = board.length
@@ -82,9 +89,12 @@ def main():
 
             if display_graphics and not done:
                 graphics.draw_board()
-                graphics.clock.tick(2)
+                graphics.clock.tick(60)
 
-        print(f"Episode {episode} finished with reward {total_reward:.2f}, max length {max_length}, steps {steps}")
+        log_msg = f"{episode} rwrd {total_reward:.1f} len {max_length} steps {steps}\n"
+        print(log_msg, end="")
+        log_file.write(log_msg)
+
         if not evaluation_mode and (episode + 1) % save_frequency == 0:
             agent.save_model(episode + 1)
 
@@ -93,7 +103,7 @@ def main():
         if display_graphics:
             graphics.board = board
 
-    if not evaluation_mode:
+    if not evaluation_mode and running:
         agent.save_model(episodes)
     if display_graphics:
         pygame.quit()
