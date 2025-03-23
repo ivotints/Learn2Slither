@@ -60,11 +60,23 @@ def main():
                         if event.key == pygame.K_ESCAPE:
                             running = False
 
-
             direction = agent.get_direction(state)
             old_length = board.length
+
+            # i need to calculate distance to the nearest food
+
+            # apple_1_distance = board.head_y -
+            # food_distance = min()
+
             done = board.make_move(direction)
             next_state = agent.get_state() # if move was deadly state will not be updated.
+
+
+            # here will be new manhattan reward system.
+
+            # i have coordinates of 2 apples.
+            # i need to check if snake became closer to the food
+
 
             if done:
                 reward = -20.0

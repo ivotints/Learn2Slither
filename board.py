@@ -35,11 +35,9 @@ class init_board:
         self.length = 3
         self.snake_segments = [] # whole snake will be stored here from tail to head in tuple (y, x)
 
-
         self._init_snake()
-        self.set_cell_to_random_empty(self.APPLE)
-        self.set_cell_to_random_empty(self.APPLE)
-
+        self.apple_1 = self.set_cell_to_random_empty(self.APPLE)
+        self.apple_2 = self.set_cell_to_random_empty(self.APPLE)
         self.set_cell_to_random_empty(self.PEPPER)
 
     def _place_adjacent_segment(self, y, x):
@@ -127,7 +125,6 @@ class init_board:
                     return (y, x)
 
     def make_move(self, dir):
-        # first i need to check where do i move.
         new_y = dir[0] + self.head_y
         new_x = dir[1] + self.head_x
         if not self.is_in_table(new_y, new_x):
@@ -157,7 +154,11 @@ class init_board:
             self.head_x = new_x
             self.set_cell(new_y, new_x, self.HEAD)
             self.moving_dir = dir
-            self.set_cell_to_random_empty(self.APPLE)
+
+            if self.apple_1 == (new_y, new_x):
+                self.apple_1 = self.set_cell_to_random_empty(self.APPLE)
+            else:
+                self.apple_2 = self.set_cell_to_random_empty(self.APPLE)
 
         elif cell == self.PEPPER:
             self.length -= 1

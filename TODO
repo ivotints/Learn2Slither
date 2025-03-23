@@ -1,8 +1,5 @@
-epsilon-greedy policy What is that?
 
 How correctly change epsilon, and till which value? Will be epsilon turned off while evaluating?
-
-What is погоня за движущейся целью
 
 How does target model updated?
 
@@ -12,6 +9,7 @@ Implement reward based on how close is snake to the food. If it moves in directi
 
 For what do we use reward? For training only?
 
+make a new reward system Manhattan
 
 What is Bellman equasion?
 

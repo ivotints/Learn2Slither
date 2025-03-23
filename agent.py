@@ -15,10 +15,7 @@ class SnakeAgent:
         self.model = self._create_model()
         self.epsilon = 1.0
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
-
-        self.learning_rate = 0.001
-
+        self.epsilon_decay = 0.999
         self.memory = deque(maxlen = 2000)
         self.target_model = self._create_model()
         self.gamma = 0.95
@@ -35,10 +32,6 @@ class SnakeAgent:
         optimizer = tf.keras.optimizers.Adam(0.001, clipvalue=1.0)
         model.compile(optimizer=optimizer, loss='mse')
         return model
-
-    def update_target_model(self):
-        """Update the target model with weights from the primary model"""
-        self.target_model.set_weights(self.model.get_weights())
 
     def get_state(self):
         """Get all distances as neural network input"""
@@ -178,5 +171,5 @@ class SnakeAgent:
         # Update the target network periodically
         self.update_target_counter += 1
         if self.update_target_counter > 100:
-            self.update_target_model()
+            self.target_model.set_weights(self.model.get_weights())
             self.update_target_counter = 0
