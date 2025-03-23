@@ -35,8 +35,8 @@ def main():
     if display_graphics:
         graphics = init_graphics(board)
 
-    episodes = 10000
-    save_frequency = 100
+    episodes = 1000000
+    save_frequency = 300
     running = True
 
     for episode in range (episodes):
@@ -47,7 +47,7 @@ def main():
         max_length = 3
         steps = 0
         steps_no_food = 0
-        max_steps = 300 # to prevent loops
+        max_steps = 200 # to prevent loops
         if not running:
                 break
 
@@ -59,38 +59,40 @@ def main():
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
                             running = False
+            if not running:
+                break
 
             direction = agent.get_direction(state)
             old_length = board.length
 
-            # i need to calculate distance to the nearest food
-
-            # apple_1_distance = board.head_y -
-            # food_distance = min()
+            apple_1_distance = abs(board.head_y - board.apple_1[0]) + abs(board.head_x - board.apple_1[1])
+            apple_2_distance = abs(board.head_y - board.apple_2[0]) + abs(board.head_x - board.apple_2[1])
+            old_food_distance = min(apple_1_distance, apple_2_distance)
 
             done = board.make_move(direction)
-            next_state = agent.get_state() # if move was deadly state will not be updated.
 
+            apple_1_distance = abs(board.head_y - board.apple_1[0]) + abs(board.head_x - board.apple_1[1])
+            apple_2_distance = abs(board.head_y - board.apple_2[0]) + abs(board.head_x - board.apple_2[1])
+            new_food_distance = min(apple_1_distance, apple_2_distance)
 
-            # here will be new manhattan reward system.
-
-            # i have coordinates of 2 apples.
-            # i need to check if snake became closer to the food
-
-
-            if done:
+            if done: # died
                 reward = -20.0
-            elif board.length == old_length:
-                reward = -0.1
-            elif board.length > old_length:
-                reward = 2.0
+            elif board.length > old_length: # eated apple
+                reward = 1.0 * (board.length)# add non linearity
                 steps_no_food = 0
                 max_length = max(board.length, max_length)
-            else:
-                reward = -2.0
+            elif board.length < old_length: # eated pepper
+                reward = -2.0 * (board.length)
+            elif new_food_distance < old_food_distance: # moved closer to the food
+                reward = 0
+            elif new_food_distance == old_food_distance:
+                reward = -0.1
+            elif new_food_distance > old_food_distance: # moved away from food
+                reward = -0.2
 
             total_reward += reward
 
+            next_state = agent.get_state() # if move was deadly state will not be updated.
             if not evaluation_mode:
                 state = agent.train(state, direction, reward, next_state, done)
             else:
@@ -101,7 +103,7 @@ def main():
 
             if display_graphics and not done:
                 graphics.draw_board()
-                graphics.clock.tick(60)
+                graphics.clock.tick(1)
 
         log_msg = f"{episode} rwrd {total_reward:.1f} len {max_length} steps {steps}\n"
         print(log_msg, end="")

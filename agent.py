@@ -15,10 +15,9 @@ class SnakeAgent:
         self.model = self._create_model()
         self.epsilon = 1.0
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.999
-        self.memory = deque(maxlen = 2000)
+        self.epsilon_decay = 0.999719
+        self.memory = deque(maxlen = 16384)
         self.target_model = self._create_model()
-        self.gamma = 0.95
         self.update_target_counter = 0
         self.evaluation_mode = False
         self.folder_name = 'models'
@@ -93,14 +92,11 @@ class SnakeAgent:
             state_tensor = np.expand_dims(state, axis=0)
             q_values = self.model.predict(state_tensor, verbose=0)[0]
             action = np.argmax(q_values)
+            print("q_values: ", q_values)
 
         return self.board.DIRECTIONS[action]
 
 
-    def train(self, state, direction, reward, next_state, done):
-        self.remember(state, direction, reward, next_state, done)
-        self.replay(32)
-        return next_state
 
     def remember(self, state, action, reward, next_state, done):
         action_idx = self.board.DIRECTIONS.index(action)
@@ -137,9 +133,12 @@ class SnakeAgent:
             print("\033[91mFailed to load model\033[0m")
             sys.exit(1)
 
+    def train(self, state, direction, reward, next_state, done):
+        self.remember(state, direction, reward, next_state, done)
+        self.replay(512)
+        return next_state
 
     def replay(self, batch_size):
-        """Train the model on a batch of experiences from memory"""
         if len(self.memory) < batch_size:
             return
 
@@ -148,16 +147,14 @@ class SnakeAgent:
         states = np.array([experience[0] for experience in minibatch])
         next_states = np.array([experience[3] for experience in minibatch])
 
-        # Predict Q-values for current states and next states
         current_q_values = self.model.predict(states, verbose=0)
         next_q_values = self.target_model.predict(next_states, verbose=0)
 
-        # Update Q-values based on the Bellman equation
         for i, (state, action_idx, reward, next_state, done) in enumerate(minibatch):
             if done:
                 target = reward
             else:
-                target = reward + self.gamma * np.max(next_q_values[i])
+                target = reward + 0.95 * np.max(next_q_values[i])
 
             current_q_values[i][action_idx] = target
 
@@ -170,6 +167,6 @@ class SnakeAgent:
 
         # Update the target network periodically
         self.update_target_counter += 1
-        if self.update_target_counter > 100:
+        if self.update_target_counter > 1000:
             self.target_model.set_weights(self.model.get_weights())
             self.update_target_counter = 0
