@@ -28,8 +28,8 @@ class SnakeAgent:
             keras.layers.Dense(16, activation='relu'),
             keras.layers.Dense(self.output_size, activation='linear')
         ])
-        optimizer = tf.keras.optimizers.Adam(0.001, clipvalue=1.0)
-        model.compile(optimizer=optimizer, loss='mse')
+        optimizer = tf.keras.optimizers.Adam(0.001, clipvalue=1.0) # try smaller learning rate
+        model.compile(optimizer=optimizer, loss='mse') # try huber_loss
         return model
 
     def get_state(self):
@@ -92,29 +92,28 @@ class SnakeAgent:
             state_tensor = np.expand_dims(state, axis=0)
             q_values = self.model.predict(state_tensor, verbose=0)[0]
             action = np.argmax(q_values)
-            print("q_values: ", q_values)
+            # print("q_values: ", q_values)
 
         return self.board.DIRECTIONS[action]
-
-
 
     def remember(self, state, action, reward, next_state, done):
         action_idx = self.board.DIRECTIONS.index(action)
         self.memory.append((state, action_idx, reward, next_state, done))
 
     def set_folder_name(self, name):
-        if os.path.exists(name) and os.path.isdir(name):
+        if os.path.exists(os.path.join("models", name)) and os.path.isdir(os.path.join("models", name)):
             i = 2
-            while os.path.exists(f"{name}{i}") and os.path.isdir(f"{name}{i}"):
+            while os.path.exists(f"{os.path.join("models", name)}{i}") and os.path.isdir(f"{os.path.join("models", name)}{i}"):
                 i += 1
             self.folder_name = f"{name}{i}"
         else:
             self.folder_name = name
-        os.makedirs(self.folder_name, exist_ok=True)
+        os.makedirs("models", exist_ok=True)
+        os.makedirs(os.path.join("models", self.folder_name), exist_ok=True)
 
     def save_model(self, episode):
         timestamp = datetime.now().strftime("%Y%m%d_%H:%M")
-        model_path = os.path.join(self.folder_name, f"snake_model_{episode}_{timestamp}.keras")
+        model_path = os.path.join("models", self.folder_name, f"snake_model_{episode}_{timestamp}.keras")
         self.model.save(model_path)
         print(f"Model saved to {model_path}")
 
@@ -132,6 +131,10 @@ class SnakeAgent:
             import sys
             print("\033[91mFailed to load model\033[0m")
             sys.exit(1)
+
+    def load_cpp_model(self, model_path):
+        import torch
+        model = torch.jit.load(model_path)
 
     def train(self, state, direction, reward, next_state, done):
         self.remember(state, direction, reward, next_state, done)
@@ -158,14 +161,19 @@ class SnakeAgent:
 
             current_q_values[i][action_idx] = target
 
-        # Train the model
         self.model.fit(states, current_q_values, epochs=1, verbose=0)
 
-        # Decay epsilon
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
 
-        # Update the target network periodically
+
+        # TRY soft update
+
+        # def soft_update(self, tau=0.01):
+        #     for target_param, param in zip(self.target_model.get_weights(), self.model.get_weights()):
+        #         target_param = tau * param + (1 - tau) * target_param
+        #     self.target_model.set_weights(target_param)
+
         self.update_target_counter += 1
         if self.update_target_counter > 1000:
             self.target_model.set_weights(self.model.get_weights())

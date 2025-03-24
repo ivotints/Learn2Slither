@@ -128,12 +128,12 @@ class init_board:
         new_y = dir[0] + self.head_y
         new_x = dir[1] + self.head_x
         if not self.is_in_table(new_y, new_x):
-            print("death from wall")
+            # print("death from wall")
             return True
         cell = self.get_cell(new_y, new_x)
         if cell == self.TAIL:
             if not (new_y == self.tail_y and new_x == self.tail_x) or self.length == 2:
-                print("death from canibalism")
+                # print("death from canibalism")
                 return True
             else:
                 self.snake_segments.append((new_y, new_x))
@@ -165,7 +165,7 @@ class init_board:
         elif cell == self.PEPPER:
             self.length -= 1
             if self.length < 1:
-                print("death from PEPPER")
+                # print("death from PEPPER")
                 return True
             self.snake_segments.append((new_y, new_x))
 

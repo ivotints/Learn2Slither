@@ -5,14 +5,20 @@ How does target model updated?
 
 Principles of Depp Q learning algorithm
 
-Implement reward based on how close is snake to the food. If it moves in direction of food - reward.
-
 For what do we use reward? For training only?
-
-make a new reward system Manhattan
 
 What is Bellman equasion?
 
-Later I will multithread learning, but not now.
+make first 30 steps free from punishment
 
-first linearsecond softmaxthird linear with special optimizer
+make death no so punishment
+
+make apple more rewarding.
+
+try to understand limitation of model's vision
+
+dont punish so much for eating pepper.
+
+get rid of unlinear profit.
+
+Later I will multithread learning, but not now.

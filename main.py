@@ -25,7 +25,7 @@ def main():
     evaluation_mode = args.evaluation_mode
     agent.evaluation_mode = evaluation_mode
     agent.set_folder_name(args.name)
-    log_file = open(os.path.join(agent.folder_name, 'logs.txt'), 'a')
+    log_file = open(os.path.join("models", agent.folder_name, 'logs.txt'), 'a')
 
 
     if args.load_model:
@@ -75,20 +75,27 @@ def main():
             apple_2_distance = abs(board.head_y - board.apple_2[0]) + abs(board.head_x - board.apple_2[1])
             new_food_distance = min(apple_1_distance, apple_2_distance)
 
-            if done: # died
-                reward = -20.0
-            elif board.length > old_length: # eated apple
-                reward = 1.0 * (board.length)# add non linearity
+            # if done: # died
+            #     reward = -20.0
+            # elif board.length > old_length: # eated apple
+            #     reward = 1.0 * (board.length)# add non linearity
+            #     steps_no_food = 0
+            #     max_length = max(board.length, max_length)
+            # elif board.length < old_length: # eated pepper
+            #     reward = -2.0 * (board.length)
+            # elif new_food_distance < old_food_distance: # moved closer to the food
+            #     reward = 0
+            # elif new_food_distance == old_food_distance:
+            #     reward = -0.1
+            # elif new_food_distance > old_food_distance: # moved away from food
+            #     reward = -0.2
+            reward = 0
+            if board.length > old_length:
+                reward = 1.0
                 steps_no_food = 0
-                max_length = max(board.length, max_length)
-            elif board.length < old_length: # eated pepper
-                reward = -2.0 * (board.length)
-            elif new_food_distance < old_food_distance: # moved closer to the food
-                reward = 0
-            elif new_food_distance == old_food_distance:
-                reward = -0.1
-            elif new_food_distance > old_food_distance: # moved away from food
-                reward = -0.2
+                max_length = max(board.length,  max_length)
+            elif board.length < old_length:
+                reward = -1.0
 
             total_reward += reward
 
