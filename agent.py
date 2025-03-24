@@ -24,12 +24,12 @@ class SnakeAgent:
 
     def _create_model(self):
         model = keras.Sequential([
-            keras.layers.Dense(32, input_shape=(self.input_size,), activation='relu'),
-            keras.layers.Dense(16, activation='relu'),
+            keras.layers.Dense(64, input_shape=(self.input_size,), activation='relu'),
+            keras.layers.Dense(32, activation='relu'),
             keras.layers.Dense(self.output_size, activation='linear')
         ])
-        optimizer = tf.keras.optimizers.Adam(0.001, clipvalue=1.0) # try smaller learning rate
-        model.compile(optimizer=optimizer, loss='mse') # try huber_loss
+        optimizer = tf.keras.optimizers.Adam(0.002, clipvalue=1.0) # try smaller learning rate
+        model.compile(optimizer=optimizer, loss=tf.keras.losses.Huber(delta=1.0)) # try huber_loss
         return model
 
     def get_state(self):
@@ -101,9 +101,10 @@ class SnakeAgent:
         self.memory.append((state, action_idx, reward, next_state, done))
 
     def set_folder_name(self, name):
-        if os.path.exists(os.path.join("models", name)) and os.path.isdir(os.path.join("models", name)):
+        base_path = os.path.join("models", name)
+        if os.path.exists(base_path) and os.path.isdir(base_path):
             i = 2
-            while os.path.exists(f"{os.path.join("models", name)}{i}") and os.path.isdir(f"{os.path.join("models", name)}{i}"):
+            while os.path.exists(f"{base_path}{i}") and os.path.isdir(f"{base_path}{i}"):
                 i += 1
             self.folder_name = f"{name}{i}"
         else:
@@ -132,9 +133,9 @@ class SnakeAgent:
             print("\033[91mFailed to load model\033[0m")
             sys.exit(1)
 
-    def load_cpp_model(self, model_path):
-        import torch
-        model = torch.jit.load(model_path)
+    # def load_cpp_model(self, model_path):
+    #     import torch
+    #     model = torch.jit.load(model_path)
 
     def train(self, state, direction, reward, next_state, done):
         self.remember(state, direction, reward, next_state, done)
@@ -169,12 +170,14 @@ class SnakeAgent:
 
         # TRY soft update
 
-        # def soft_update(self, tau=0.01):
-        #     for target_param, param in zip(self.target_model.get_weights(), self.model.get_weights()):
-        #         target_param = tau * param + (1 - tau) * target_param
-        #     self.target_model.set_weights(target_param)
+        new_weights = []
+        target_weights = self.target_model.get_weights()
+        for i, model_weights in enumerate(self.model.get_weights()):
+            new_weights.append(0.01 * model_weights + 0.99 * target_weights[i])
+        self.target_model.set_weights(new_weights)
 
-        self.update_target_counter += 1
-        if self.update_target_counter > 1000:
-            self.target_model.set_weights(self.model.get_weights())
-            self.update_target_counter = 0
+        # hard update every 1000 iterations.
+        # self.update_target_counter += 1
+        # if self.update_target_counter > 1000:
+        #     self.target_model.set_weights(self.model.get_weights())
+        #     self.update_target_counter = 0

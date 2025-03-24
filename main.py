@@ -52,28 +52,28 @@ def main():
                 break
 
         while running and not done and steps_no_food < max_steps:
-            if display_graphics:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        running = False
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_ESCAPE:
-                            running = False
+            # if display_graphics:
+            #     for event in pygame.event.get():
+            #         if event.type == pygame.QUIT:
+            #             running = False
+            #         if event.type == pygame.KEYDOWN:
+            #             if event.key == pygame.K_ESCAPE:
+            #                 running = False
             if not running:
                 break
 
             direction = agent.get_direction(state)
             old_length = board.length
 
-            apple_1_distance = abs(board.head_y - board.apple_1[0]) + abs(board.head_x - board.apple_1[1])
-            apple_2_distance = abs(board.head_y - board.apple_2[0]) + abs(board.head_x - board.apple_2[1])
-            old_food_distance = min(apple_1_distance, apple_2_distance)
+            # apple_1_distance = abs(board.head_y - board.apple_1[0]) + abs(board.head_x - board.apple_1[1])
+            # apple_2_distance = abs(board.head_y - board.apple_2[0]) + abs(board.head_x - board.apple_2[1])
+            # old_food_distance = min(apple_1_distance, apple_2_distance)
 
             done = board.make_move(direction)
 
-            apple_1_distance = abs(board.head_y - board.apple_1[0]) + abs(board.head_x - board.apple_1[1])
-            apple_2_distance = abs(board.head_y - board.apple_2[0]) + abs(board.head_x - board.apple_2[1])
-            new_food_distance = min(apple_1_distance, apple_2_distance)
+            # apple_1_distance = abs(board.head_y - board.apple_1[0]) + abs(board.head_x - board.apple_1[1])
+            # apple_2_distance = abs(board.head_y - board.apple_2[0]) + abs(board.head_x - board.apple_2[1])
+            # new_food_distance = min(apple_1_distance, apple_2_distance)
 
             # if done: # died
             #     reward = -20.0
