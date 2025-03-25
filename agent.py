@@ -24,12 +24,11 @@ class SnakeAgent:
 
     def _create_model(self):
         model = keras.Sequential([
-            keras.layers.Dense(64, input_shape=(self.input_size,), activation='relu'),
-            keras.layers.Dense(32, activation='relu'),
+            keras.layers.Dense(32, input_shape=(self.input_size,), activation='relu'),
+            keras.layers.Dense(16, activation='relu'),
             keras.layers.Dense(self.output_size, activation='linear')
         ])
-        optimizer = tf.keras.optimizers.Adam(0.002, clipvalue=1.0) # try smaller learning rate
-        model.compile(optimizer=optimizer, loss=tf.keras.losses.Huber(delta=1.0)) # try huber_loss
+        model.compile(optimizer='adam', loss='mse')
         return model
 
     def get_state(self):
@@ -167,17 +166,17 @@ class SnakeAgent:
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
 
-
         # TRY soft update
 
-        new_weights = []
-        target_weights = self.target_model.get_weights()
-        for i, model_weights in enumerate(self.model.get_weights()):
-            new_weights.append(0.01 * model_weights + 0.99 * target_weights[i])
-        self.target_model.set_weights(new_weights)
+        # new_weights = []
+        # target_weights = self.target_model.get_weights()
+        # for i, model_weights in enumerate(self.model.get_weights()):
+        #     new_weights.append(0.01 * model_weights + 0.99 * target_weights[i])
+        # self.target_model.set_weights(new_weights)
 
         # hard update every 1000 iterations.
-        # self.update_target_counter += 1
-        # if self.update_target_counter > 1000:
-        #     self.target_model.set_weights(self.model.get_weights())
-        #     self.update_target_counter = 0
+
+        self.update_target_counter += 1
+        if self.update_target_counter > 700:
+            self.target_model.set_weights(self.model.get_weights())
+            self.update_target_counter = 0

@@ -59,8 +59,8 @@ def main():
             #         if event.type == pygame.KEYDOWN:
             #             if event.key == pygame.K_ESCAPE:
             #                 running = False
-            if not running:
-                break
+            # if not running:
+            #     break
 
             direction = agent.get_direction(state)
             old_length = board.length
