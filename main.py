@@ -27,10 +27,12 @@ def main():
     agent.set_folder_name(args.name)
     log_file = open(os.path.join("models", agent.folder_name, 'logs.txt'), 'a')
 
+    fps = 5
+    step_by_step_mode = False
+    wait_for_step = False
 
     if args.load_model:
         agent.load_model(args.load_model)
-
 
     if display_graphics:
         graphics = init_graphics(board)
@@ -52,15 +54,34 @@ def main():
                 break
 
         while running and not done and steps_no_food < max_steps:
-            # if display_graphics:
-            #     for event in pygame.event.get():
-            #         if event.type == pygame.QUIT:
-            #             running = False
-            #         if event.type == pygame.KEYDOWN:
-            #             if event.key == pygame.K_ESCAPE:
-            #                 running = False
-            # if not running:
-            #     break
+            if display_graphics:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            running = False
+                        # Speed control with number keys
+                        elif event.key >= pygame.K_0 and event.key <= pygame.K_9:
+                            key_num = event.key - pygame.K_0
+                            if key_num == 0:
+                                step_by_step_mode = True
+                                wait_for_step = True
+                                print("Step-by-step mode enabled. Press SPACE to advance.")
+                            else:
+                                step_by_step_mode = False
+                                fps = 2 + (key_num - 1) * 2  # 2, 4, 6, ..., 18 fps
+                                print(f"Speed set to {fps} fps")
+                        # Space key for step-by-step mode
+                        elif event.key == pygame.K_SPACE and step_by_step_mode:
+                            wait_for_step = False
+
+            if step_by_step_mode and wait_for_step:
+                pygame.time.wait(10)  # Small delay to prevent CPU hogging
+                continue
+
+            if not running:
+                break
 
             direction = agent.get_direction(state)
             old_length = board.length
@@ -99,7 +120,7 @@ def main():
 
             total_reward += reward
 
-            next_state = agent.get_state() # if move was deadly state will not be updated.
+            next_state = agent.get_state()
             if not evaluation_mode:
                 state = agent.train(state, direction, reward, next_state, done)
             else:
@@ -108,9 +129,11 @@ def main():
             steps += 1
             steps_no_food += 1
 
-            if display_graphics and not done:
+            if display_graphics:
                 graphics.draw_board()
-                graphics.clock.tick(1)
+                graphics.clock.tick(fps)
+                if step_by_step_mode:
+                    wait_for_step = True
 
         log_msg = f"{episode} rwrd {total_reward:.1f} len {max_length} steps {steps}\n"
         print(log_msg, end="")

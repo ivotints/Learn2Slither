@@ -1,4 +1,3 @@
-
 How correctly change epsilon, and till which value? Will be epsilon turned off while evaluating?
 
 How does target model updated?
@@ -22,3 +21,7 @@ dont punish so much for eating pepper.
 get rid of unlinear profit.
 
 Later I will multithread learning, but not now.
+
+16 to 12 no walls.
+
+get rifd of going back
