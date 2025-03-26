@@ -1,6 +1,12 @@
-How correctly change epsilon, and till which value? Will be epsilon turned off while evaluating?
-
 How does target model updated?
+
+How does model.fit works?
+
+what is memory used for?
+
+How reward works?
+
+have multiple starting positions with different length
 
 Principles of Depp Q learning algorithm
 
@@ -25,3 +31,5 @@ Later I will multithread learning, but not now.
 16 to 12 no walls.
 
 get rifd of going back
+
+Implement normal path finding for reward to reward for moving in direction for food even if tailiis on the way (go around)
