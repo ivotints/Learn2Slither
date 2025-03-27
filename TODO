@@ -1,30 +1,4 @@
-How does target model updated?
-
-How does model.fit works?
-
-what is memory used for?
-
-How reward works?
-
-have multiple starting positions with different length
-
-Principles of Depp Q learning algorithm
-
-For what do we use reward? For training only?
-
-What is Bellman equasion?
-
-make first 30 steps free from punishment
-
-make death no so punishment
-
-make apple more rewarding.
-
 try to understand limitation of model's vision
-
-dont punish so much for eating pepper.
-
-get rid of unlinear profit.
 
 Later I will multithread learning, but not now.
 
@@ -33,3 +7,36 @@ Later I will multithread learning, but not now.
 get rifd of going back
 
 Implement normal path finding for reward to reward for moving in direction for food even if tailiis on the way (go around)
+
+bootstrapping
+
+Why gamma in belman euasion is 0.95?
+
+can we write a mentor/trainer for model? Or it will be too hard?
+
+have multiple starting positions with different length
+
+difference between soft and hard update
+
+write all in c++
+
+how many layers will be enough? how many neurons?
+
+
+# Left direction
+bit coding
+Is it obstacle?
+Is it good food?
+Is it bad pepper?
+What is the distance?
+
+0
+0
+1
+3
+
+and like that for all 4 directions
+
+# or try hybrid
+
+# try to disable walls from equasion of state

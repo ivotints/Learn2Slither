@@ -122,7 +122,7 @@ class SnakeAgent:
             try:
                 self.model = keras.models.load_model(model_path)
                 self.target_model = keras.models.load_model(model_path)
-                self.epsilon = self.epsilon_min
+                self.epsilon = 1 # self.epsilon_min
             except Exception as e:
                 import sys
                 print("\033[91mFailed to load model\033[0m")
@@ -131,10 +131,6 @@ class SnakeAgent:
             import sys
             print("\033[91mFailed to load model\033[0m")
             sys.exit(1)
-
-    # def load_cpp_model(self, model_path):
-    #     import torch
-    #     model = torch.jit.load(model_path)
 
     def train(self, state, direction, reward, next_state, done):
         self.remember(state, direction, reward, next_state, done)

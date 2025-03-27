@@ -1,0 +1,5 @@
+xset s off
+xset -dpms
+xset s noblank
+
+pip install -r requirements.txt
