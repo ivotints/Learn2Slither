@@ -10,7 +10,7 @@ import random
 class SnakeAgent:
     def __init__(self, board):
         self.board = board
-        self.input_size = 16  # 4 walls + 4 obstacles + 4 foods + 4 peppers
+        self.input_size = 12 # 4 obstacles + 4 foods + 4 peppers
         self.output_size = 4  # LEFT, UP, RIGHT, DOWN
         self.model = self._create_model()
         self.epsilon = 1.0
@@ -32,59 +32,59 @@ class SnakeAgent:
         return model
 
     def get_state(self):
-        """Get all distances as neural network input"""
         state = []
-        head_y, head_x = self.board.head_y, self.board.head_x
-
-        state.append(head_x + 1)
-        state.append(head_y + 1)
-        state.append(self.board.size_x - head_x)
-        state.append(self.board.size_y - head_y)
+        head_y = self.board.head_y
+        head_x = self.board.head_x
+        table = self.board.table
+        tail_y = self.board.tail_y
+        tail_x = self.board.tail_x
+        TAIL = self.board.TAIL
+        APPLE = self.board.APPLE
+        PEPPER = self.board.PEPPER
 
         for dy, dx in self.board.DIRECTIONS:
-            dist = self._find_closest_obstacle(head_y, head_x, dy, dx)
+            y = head_y
+            x = head_x
+            dist = 0
+            while True:
+                y += dy
+                x += dx
+                if y >= 10 or x >= 10 or y < 0 or x < 0:
+                    break
+                if table[y][x] == TAIL and (y != tail_y or x != tail_x):
+                    break
+                dist += 1
             state.append(dist)
 
-        for dy, dx in self.board.DIRECTIONS:
-            dist = self._find_closest_food(head_y, head_x, dy, dx, self.board.APPLE)
+            y = head_y
+            x = head_x
+            dist = 1
+            while True:
+                y += dy
+                x += dx
+                if y >= 10 or x >= 10 or y < 0 or x < 0:
+                    break
+                if table[y][x] == APPLE:
+                    break
+                dist += 1
             state.append(dist)
 
-        for dy, dx in self.board.DIRECTIONS:
-            dist = self._find_closest_food(head_y, head_x, dy, dx, self.board.PEPPER)
+            y = head_y
+            x = head_x
+            dist = 1
+            while True:
+                y += dy
+                x += dx
+                if y >= 10 or x >= 10 or y < 0 or x < 0:
+                    break
+                if table[y][x] == PEPPER:
+                    break
+                dist += 1
             state.append(dist)
 
         return np.array(state)
 
-    def _find_closest_obstacle(self, y, x, dy, dx):
-        distance = 0
-        while True:
-            y += dy
-            x += dx
-            distance += 1
-
-            if not self.board.is_in_table(y, x):
-                return distance
-
-            cell = self.board.get_cell(y, x)
-            if cell == self.board.TAIL and (y != self.board.tail_y and x != self.board.tail_x): # it can move on tail's end
-                return distance
-
-    def _find_closest_food(self, y, x, dy, dx, target):
-        distance = 0
-        while True:
-            y += dy
-            x += dx
-            distance += 1
-
-            if not self.board.is_in_table(y, x):
-                return 0
-
-            cell = self.board.get_cell(y, x)
-            if cell == target:
-                return distance
-
     def get_direction(self, state):
-        """Choose direction based on the current state using epsilon-greedy policy"""
         if np.random.rand() <= self.epsilon and not self.evaluation_mode:
             action = random.randint(0, self.output_size - 1)
         else:
