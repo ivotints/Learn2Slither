@@ -41,10 +41,6 @@ and like that for all 4 directions
 
 # try to disable walls from equasion of state
 
-1. I will implement model with 12 neurons.
-
-
-
 
 
 One more approach is to tell with 4 neurons - bits - is it empty or not to move in

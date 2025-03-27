@@ -10,7 +10,7 @@ import random
 class SnakeAgent:
     def __init__(self, board):
         self.board = board
-        self.input_size = 12 # 4 obstacles + 4 foods + 4 peppers
+        self.input_size = 16
         self.output_size = 4  # LEFT, UP, RIGHT, DOWN
         self.model = self._create_model()
         self.epsilon = 1.0
@@ -32,7 +32,7 @@ class SnakeAgent:
         return model
 
     def get_state(self):
-        state = []
+        state = np.zeros(16, dtype=np.float32)
         head_y = self.board.head_y
         head_x = self.board.head_x
         table = self.board.table
@@ -41,48 +41,81 @@ class SnakeAgent:
         TAIL = self.board.TAIL
         APPLE = self.board.APPLE
         PEPPER = self.board.PEPPER
+        SIZE = 10
+        SIZE_INV = 1.0 / SIZE
 
-        for dy, dx in self.board.DIRECTIONS:
-            y = head_y
-            x = head_x
-            dist = 0
-            while True:
-                y += dy
-                x += dx
-                if y >= 10 or x >= 10 or y < 0 or x < 0:
-                    break
-                if table[y][x] == TAIL and (y != tail_y or x != tail_x):
-                    break
-                dist += 1
-            state.append(dist)
+        for i, (dy, dx) in enumerate(self.board.DIRECTIONS):
+            # y = head_y
+            # x = head_x
+            # dist = 0
+            # while True:
+            #     y += dy
+            #     x += dx
+            #     if y >= 10 or x >= 10 or y < 0 or x < 0:
+            #         break
+            #     if table[y][x] == TAIL and (y != tail_y or x != tail_x):
+            #         break
+            #     dist += 1
+            # state.append(dist)
 
-            y = head_y
-            x = head_x
+            # y = head_y
+            # x = head_x
+            # dist = 1
+            # while True:
+            #     y += dy
+            #     x += dx
+            #     if y >= 10 or x >= 10 or y < 0 or x < 0:
+            #         break
+            #     if table[y][x] == APPLE:
+            #         break
+            #     dist += 1
+            # state.append(dist)
+
+            # y = head_y
+            # x = head_x
+            # dist = 1
+            # while True:
+            #     y += dy
+            #     x += dx
+            #     if y >= 10 or x >= 10 or y < 0 or x < 0:
+            #         break
+            #     if table[y][x] == PEPPER:
+            #         break
+            #     dist += 1
+            # state.append(dist)
+
+            # now i will add 16 more neurons which will encode this info:
+            # Is it obstacle?
+            # Is it apple?
+            # Is it pepper?
+            # What is the distance?
+
             dist = 1
-            while True:
-                y += dy
-                x += dx
-                if y >= 10 or x >= 10 or y < 0 or x < 0:
-                    break
-                if table[y][x] == APPLE:
-                    break
-                dist += 1
-            state.append(dist)
-
             y = head_y
             x = head_x
-            dist = 1
+            base_idx = i * 4
+
             while True:
                 y += dy
                 x += dx
-                if y >= 10 or x >= 10 or y < 0 or x < 0:
+                if y >= SIZE or x >= SIZE or y < 0 or x < 0:
+                    state[base_idx] = 1
                     break
-                if table[y][x] == PEPPER:
+                cell = table[y][x]
+                if cell == TAIL and (y != tail_y or x != tail_x):
+                    state[base_idx] = 1
+                    break
+                if cell == APPLE:
+                    state[base_idx + 1] = 1
+                    break
+                if cell == PEPPER:
+                    state[base_idx + 2] = 1
                     break
                 dist += 1
-            state.append(dist)
 
-        return np.array(state)
+            state[base_idx + 3] = dist * SIZE_INV
+
+        return state
 
     def get_direction(self, state):
         if np.random.rand() <= self.epsilon and not self.evaluation_mode:
