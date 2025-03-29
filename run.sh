@@ -1,1 +1,1 @@
-python3 main.py -ng --name 
+python3 main.py -ng --name 3_vision
