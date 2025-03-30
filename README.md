@@ -50,33 +50,3 @@ each position of the board can have 5 states: Snake Head, body segment, Green ap
 
 
 
-Inputs that I would give:
-
-    * Amount of inputs should be fixed for different map size other than 10 (bonus)
-
-    * Distance to left Wall
-    * Distance to top Wall
-    * Distance to right Wall
-    * Distance to down Wall
-
-    * Distance to left closest obstacle (Tail or Wall)
-    * Distance to top closest obstacle (Tail or Wall)
-    * Distance to right closest obstacle (Tail or Wall)
-    * Distance to down closest obstacle (Tail or Wall)
-
-    * Distance to left Food
-    * Distance to top Food
-    * Distance to right Food
-    * Distance to down Food
-
-    * Distance to left Pepper
-    * Distance to top Pepper
-    * Distance to right Pepper
-    * Distance to down Pepper
-
-    Output:
-
-    * Move Left
-    * Move Right
-    * Move Up
-    * Move Down

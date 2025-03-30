@@ -50,7 +50,7 @@ class SnakeAgent:
         SIZE_INV = 0.111111111  #  1/(SIZE-1) = 1/9
 
         directions = self.board.DIRECTIONS
-        dir_idx = directions.index(self.board.moving_dir)
+        dir_idx = self.board.moving_dir
 
         direction_indices = [(dir_idx-1)%4, dir_idx, (dir_idx+1)%4]
         direction_vectors = [directions[idx] for idx in direction_indices]
@@ -83,38 +83,20 @@ class SnakeAgent:
 
         return state
 
-    def get_direction(self, state):
+    def get_action(self, state):
         """AI will choose his action"""
         # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT
         if np.random.rand() <= self.epsilon and not self.evaluation_mode:
             action = random.randint(0, self.OUTPUT_SIZE - 1)
         else:
             state_tensor = np.expand_dims(state, axis=0)
-            q_values = self.model.predict(state_tensor, verbose=0)[0]
+            q_values = self.model(state_tensor)[0]
             action = np.argmax(q_values)
 
-        dir_idx = self.board.DIRECTIONS.index(self.board.moving_dir)
-
-        if action == 0:  # LEFT
-            new_dir_idx = (dir_idx - 1) % 4
-        elif action == 1:
-            new_dir_idx = dir_idx
-        else:
-            new_dir_idx = (dir_idx + 1) % 4
-
-        return self.board.DIRECTIONS[new_dir_idx]
+        return action # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT
 
     def remember(self, state, action, reward, next_state, done):
-        dir_idx = self.board.DIRECTIONS.index(self.board.moving_dir)
-
-        if action == self.board.DIRECTIONS[(dir_idx-1)%4]:  # LEFT
-            action_idx = 0
-        elif action == self.board.DIRECTIONS[dir_idx]:  # STRAIGHT
-            action_idx = 1
-        else:  # RIGHT
-            action_idx = 2
-
-        self.memory.append((state, action_idx, reward, next_state, done))
+        self.memory.append((state, action, reward, next_state, done))
 
     def set_folder_name(self, name):
         base_path = os.path.join("models", name)
@@ -149,10 +131,9 @@ class SnakeAgent:
             print("\033[91mFailed to load model\033[0m")
             sys.exit(1)
 
-    def train(self, state, direction, reward, next_state, done):
-        self.remember(state, direction, reward, next_state, done)
+    def train(self, state, action, reward, next_state, done):
+        self.remember(state, action, reward, next_state, done)
         self.replay(128)
-        return next_state
 
     def replay(self, batch_size):
         if len(self.memory) < batch_size:

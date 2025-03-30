@@ -115,7 +115,7 @@ class init_graphics:
         head_center_x = self.board.head_x * self.cell_size + self.cell_size // 2
         head_center_y = self.board.head_y * self.cell_size + self.cell_size // 2
 
-        dir_y, dir_x = self.board.moving_dir
+        dir_y, dir_x = self.board.DIRECTIONS[self.board.moving_dir]
         if dir_x == -1:  # LEFT
             eye_offsets = [(-8, 0), (8, 0)]
             pupil_shift = (0, -3)

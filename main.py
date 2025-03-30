@@ -51,7 +51,7 @@ def main():
         steps_no_food = 0
         max_steps = 200 # to prevent loops
         if not running:
-                break
+            break
 
         while running and not done and steps_no_food < max_steps:
             if display_graphics:
@@ -61,7 +61,6 @@ def main():
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
                             running = False
-                        # Speed control with number keys
                         elif event.key >= pygame.K_0 and event.key <= pygame.K_9:
                             key_num = event.key - pygame.K_0
                             if key_num == 0:
@@ -70,27 +69,26 @@ def main():
                                 print("Step-by-step mode enabled. Press SPACE to advance.")
                             else:
                                 step_by_step_mode = False
-                                fps = 2 + (key_num - 1) * 2  # 2, 4, 6, ..., 18 fps
+                                fps = 2 + (key_num - 1) * 2
                                 print(f"Speed set to {fps} fps")
-                        # Space key for step-by-step mode
                         elif event.key == pygame.K_SPACE and step_by_step_mode:
                             wait_for_step = False
 
             if step_by_step_mode and wait_for_step:
-                pygame.time.wait(10)  # Small delay to prevent CPU hogging
+                pygame.time.wait(10)
                 continue
 
             if not running:
                 break
 
-            direction = agent.get_direction(state)
+            action = agent.get_action(state)  # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT
             old_length = board.length
 
             # apple_1_distance = abs(board.head_y - board.apple_1[0]) + abs(board.head_x - board.apple_1[1])
             # apple_2_distance = abs(board.head_y - board.apple_2[0]) + abs(board.head_x - board.apple_2[1])
             # old_food_distance = min(apple_1_distance, apple_2_distance)
 
-            done = board.make_move(direction)
+            done = board.make_move(action)
 
             # apple_1_distance = abs(board.head_y - board.apple_1[0]) + abs(board.head_x - board.apple_1[1])
             # apple_2_distance = abs(board.head_y - board.apple_2[0]) + abs(board.head_x - board.apple_2[1])
@@ -122,9 +120,8 @@ def main():
 
             next_state = agent.get_state()
             if not evaluation_mode:
-                state = agent.train(state, direction, reward, next_state, done)
-            else:
-                state = next_state
+                agent.train(state, action, reward, next_state, done)
+            state = next_state
 
             steps += 1
             steps_no_food += 1
@@ -142,10 +139,7 @@ def main():
         if not evaluation_mode and (episode + 1) % save_frequency == 0:
             agent.save_model(episode + 1)
 
-        board = init_board()
-        agent.board = board
-        if display_graphics:
-            graphics.board = board
+        board.reset()
 
     if not evaluation_mode and running:
         agent.save_model(episodes)

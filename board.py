@@ -31,7 +31,7 @@ class init_board:
         self.head_x = 0
         self.tail_y = 0
         self.tail_x = 0
-        self.moving_dir = (0, -1)
+        self.moving_dir = 0  # absolute LEFT 0, UP 1, RIGHT 2, DOWN 3
         self.length = 3
         self.snake_segments = [] # whole snake will be stored here from tail to head in tuple (y, x)
 
@@ -39,6 +39,28 @@ class init_board:
         self.apple_1 = self.set_cell_to_random_empty(self.APPLE)
         self.apple_2 = self.set_cell_to_random_empty(self.APPLE)
         self.set_cell_to_random_empty(self.PEPPER)
+
+    def reset(self):
+        """Reset the board to initial state"""
+        self.table = np.full((self.size_y, self.size_x), self.EMPTY, dtype='int8')
+        self.head_y = 0
+        self.head_x = 0
+        self.tail_y = 0
+        self.tail_x = 0
+        self.moving_dir = 0
+        self.length = 3
+        self.snake_segments = []
+
+        self._init_snake()
+
+        # Place new food
+        self.apple_1 = self.set_cell_to_random_empty(self.APPLE)
+        self.apple_2 = self.set_cell_to_random_empty(self.APPLE)
+        self.set_cell_to_random_empty(self.PEPPER)
+
+        return self
+
+
 
     def _place_adjacent_segment(self, y, x):
         """Find and return coordinates for a new segment adjacent to given position"""
@@ -55,7 +77,7 @@ class init_board:
         if (y, x) == (self.head_y, self.head_x):
             tmp = random.randint(0, len(empty_cells) - 1)
             a, b = empty_cells[tmp]
-            self.moving_dir = y - a, x - b
+            self.moving_dir = self.DIRECTIONS.index((y - a, x - b))
             return empty_cells[tmp]
 
         return empty_cells[random.randint(0, len(empty_cells) - 1)]
@@ -124,38 +146,44 @@ class init_board:
                 if self.set_to_empty(y, x, value):
                     return (y, x)
 
-    def make_move(self, dir):
-        new_y = dir[0] + self.head_y
-        new_x = dir[1] + self.head_x
-        if not self.is_in_table(new_y, new_x):
-            # print("death from wall")
+    def make_move(self, action): # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT
+        # convert relative action (based on current moving direction) to absolute direction
+        # LEFT, UP, RIGHT, DOWN
+        direction = (self.moving_dir - 1 + action) % 4
+        dy = self.DIRECTIONS[direction][0]
+        dx = self.DIRECTIONS[direction][1]
+        SIZE = 10
+
+        new_y = dy + self.head_y
+        new_x = dx + self.head_x
+        if not (0 <= new_y < SIZE and 0 <= new_x < SIZE):
+            # print("Death from wall")
             return True
-        cell = self.get_cell(new_y, new_x)
+
+        cell = self.table[new_y][new_x]
         if cell == self.TAIL:
-            if not (new_y == self.tail_y and new_x == self.tail_x) or self.length == 2:
-                # print("death from canibalism")
+            if not (new_y == self.tail_y and new_x == self.tail_x):
+                # print("Death from canibalism")
                 return True
             else:
                 self.snake_segments.append((new_y, new_x))
-                self.set_cell(self.head_y, self.head_x, self.TAIL)
+                self.table[self.head_y][self.head_x] = self.TAIL
 
-                self.set_cell(self.tail_y, self.tail_x, self.EMPTY)
+                self.table[self.tail_y][self.tail_x] = self.EMPTY
                 self.snake_segments = self.snake_segments[1:]
                 self.tail_y, self.tail_x = self.snake_segments[0]
 
                 self.head_y = new_y
                 self.head_x = new_x
-                self.set_cell(new_y, new_x, self.HEAD)
-                self.moving_dir = dir
+                self.table[new_y][new_x] = self.HEAD
 
         elif cell == self.APPLE:
             self.length += 1
             self.snake_segments.append((new_y, new_x))
-            self.set_cell(self.head_y, self.head_x, self.TAIL)
+            self.table[self.head_y][self.head_x] = self.TAIL
             self.head_y = new_y
             self.head_x = new_x
-            self.set_cell(new_y, new_x, self.HEAD)
-            self.moving_dir = dir
+            self.table[new_y][new_x] = self.HEAD
 
             if self.apple_1 == (new_y, new_x):
                 self.apple_1 = self.set_cell_to_random_empty(self.APPLE)
@@ -165,37 +193,37 @@ class init_board:
         elif cell == self.PEPPER:
             self.length -= 1
             if self.length < 1:
-                # print("death from PEPPER")
+                # print("Death from PEPPER")
                 return True
             self.snake_segments.append((new_y, new_x))
 
             tmp_y, tmp_x = self.snake_segments[0]
-            self.set_cell(tmp_y, tmp_x, self.EMPTY)
+            self.table[tmp_y][tmp_x] = self.EMPTY
             self.snake_segments = self.snake_segments[1:]
             tmp_y, tmp_x = self.snake_segments[0]
-            self.set_cell(tmp_y, tmp_x, self.EMPTY)
+            self.table[tmp_y][tmp_x] = self.EMPTY
             self.snake_segments = self.snake_segments[1:]
             self.tail_y, self.tail_x = self.snake_segments[0]
 
 
             if (self.length > 1):
-                self.set_cell(self.head_y, self.head_x, self.TAIL)
+                self.table[self.head_y][self.head_x] = self.TAIL
             self.head_y = new_y
             self.head_x = new_x
-            self.set_cell(new_y, new_x, self.HEAD)
-            self.moving_dir = dir
+            self.table[new_y][new_x] = self.HEAD
             self.set_cell_to_random_empty(self.PEPPER)
 
         elif cell == self.EMPTY:
             self.snake_segments.append((new_y, new_x))
-            self.set_cell(self.head_y, self.head_x, self.TAIL)
-
-            self.set_cell(self.tail_y, self.tail_x, self.EMPTY)
+            self.table[self.head_y][self.head_x] = self.TAIL
+            self.table[self.tail_y][self.tail_x] = self.EMPTY
             self.snake_segments = self.snake_segments[1:]
             self.tail_y, self.tail_x = self.snake_segments[0]
 
             self.head_y = new_y
             self.head_x = new_x
-            self.set_cell(new_y, new_x, self.HEAD)
-            self.moving_dir = dir
+            self.table[new_y][new_x] = self.HEAD
+
+        self.moving_dir = direction
+
         return False
