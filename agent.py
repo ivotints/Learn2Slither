@@ -9,14 +9,14 @@ import random
 
 class SnakeAgent:
     INPUT_SIZE = 12
-    OUTPUT_SIZE = 3
+    OUTPUT_SIZE = 4
     def __init__(self, board):
         self.board = board
         self.model = self._create_model()
         self.epsilon = 1.0
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.998876
-        self.memory = deque(maxlen = 4096)
+        self.epsilon_decay = 0.999988
+        self.memory = deque(maxlen = 400000)
         self.target_model = self._create_model()
         self.update_target_counter = 0
         self.evaluation_mode = False
@@ -24,19 +24,13 @@ class SnakeAgent:
 
     def _create_model(self):
             model = keras.Sequential([
-                keras.layers.Dense(32, input_shape=(self.INPUT_SIZE,), activation='relu', use_bias=True),
+                keras.layers.Dense(64, input_shape=(self.INPUT_SIZE,), activation='relu', use_bias=True),
+                keras.layers.Dense(32, activation='relu'),
                 keras.layers.Dense(16, activation='relu'),
                 keras.layers.Dense(self.OUTPUT_SIZE, activation='linear')
             ])
             model.compile(optimizer='adam', loss='mse')
             return model
-
-    # now i will write new get_state, which will have
-    # 3 bits of what does snake see from the left,
-    # normalized distance (0 - 1) to nearest object
-    # same to all 3 othrs.
-
-    # output of the network will be LEFT, STRAIGHT and RIGHT.
 
     def get_state(self):
         state = np.zeros(self.INPUT_SIZE, dtype=np.float32)
@@ -56,7 +50,8 @@ class SnakeAgent:
         direction_vectors = [directions[idx] for idx in direction_indices]
 
         for i, (dy, dx) in enumerate(direction_vectors):
-            y, x = head_y, head_x
+            y = head_y
+            x = head_x
             dist = 0
             base_idx = i << 2
 
@@ -85,7 +80,7 @@ class SnakeAgent:
 
     def get_action(self, state):
         """AI will choose his action"""
-        # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT
+        # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT, 3 = BACKWARDS
         if np.random.rand() <= self.epsilon and not self.evaluation_mode:
             action = random.randint(0, self.OUTPUT_SIZE - 1)
         else:
@@ -93,7 +88,7 @@ class SnakeAgent:
             q_values = self.model(state_tensor)[0]
             action = np.argmax(q_values)
 
-        return action # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT
+        return action  # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT, 3 = BACKWARDS
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
@@ -133,7 +128,7 @@ class SnakeAgent:
 
     def train(self, state, action, reward, next_state, done):
         self.remember(state, action, reward, next_state, done)
-        self.replay(128)
+        self.replay(1024)
 
     def replay(self, batch_size):
         if len(self.memory) < batch_size:
@@ -161,6 +156,8 @@ class SnakeAgent:
         max_next_q = np.max(next_q_values, axis=1)
         targets = np.where(dones, rewards, rewards + 0.95 * max_next_q)
 
+
+        # updates the neural network's Q-values with the newly calculated target values, but only for the actions that were actually taken in each experience
         for i in range(batch_size):
             current_q_values[i, actions[i]] = targets[i]
 
@@ -169,14 +166,14 @@ class SnakeAgent:
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
 
-        self.update_target_counter += 1
-        if self.update_target_counter > 700:
-            self.target_model.set_weights(self.model.get_weights())
-            self.update_target_counter = 0
+        # self.update_target_counter += 1
+        # if self.update_target_counter > 700:
+        #     self.target_model.set_weights(self.model.get_weights())
+        #     self.update_target_counter = 0
 
         # TRY soft update
-        # new_weights = []
-        # target_weights = self.target_model.get_weights()
-        # for i, model_weights in enumerate(self.model.get_weights()):
-        #     new_weights.append(0.01 * model_weights + 0.99 * target_weights[i])
-        # self.target_model.set_weights(new_weights)
+        new_weights = []
+        target_weights = self.target_model.get_weights()
+        for i, model_weights in enumerate(self.model.get_weights()):
+            new_weights.append(0.01 * model_weights + 0.99 * target_weights[i])
+        self.target_model.set_weights(new_weights)

@@ -27,7 +27,7 @@ def main():
     agent.set_folder_name(args.name)
     log_file = open(os.path.join("models", agent.folder_name, 'logs.txt'), 'a')
 
-    fps = 5
+    fps = 18
     step_by_step_mode = False
     wait_for_step = False
 
@@ -37,8 +37,8 @@ def main():
     if display_graphics:
         graphics = init_graphics(board)
 
-    episodes = 1000000
-    save_frequency = 300
+    episodes = 10000
+    save_frequency = 50
     running = True
 
     for episode in range (episodes):
@@ -49,7 +49,7 @@ def main():
         max_length = 3
         steps = 0
         steps_no_food = 0
-        max_steps = 200 # to prevent loops
+        max_steps = 100 # to prevent loops
         if not running:
             break
 
@@ -81,7 +81,7 @@ def main():
             if not running:
                 break
 
-            action = agent.get_action(state)  # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT
+            action = agent.get_action(state)  # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT, 3 = BACKWARDS
             old_length = board.length
 
             # apple_1_distance = abs(board.head_y - board.apple_1[0]) + abs(board.head_x - board.apple_1[1])
@@ -108,13 +108,15 @@ def main():
             #     reward = -0.1
             # elif new_food_distance > old_food_distance: # moved away from food
             #     reward = -0.2
-            reward = 0
+            reward = -0.01
             if board.length > old_length:
                 reward = 1.0
                 steps_no_food = 0
                 max_length = max(board.length,  max_length)
             elif board.length < old_length:
                 reward = -1.0
+            if done:
+                reward = -5.0
 
             total_reward += reward
 

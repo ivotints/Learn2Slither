@@ -146,7 +146,7 @@ class init_board:
                 if self.set_to_empty(y, x, value):
                     return (y, x)
 
-    def make_move(self, action): # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT
+    def make_move(self, action): # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT, 3 = BACKWARDS
         # convert relative action (based on current moving direction) to absolute direction
         # LEFT, UP, RIGHT, DOWN
         direction = (self.moving_dir - 1 + action) % 4
