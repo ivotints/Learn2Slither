@@ -14,4 +14,6 @@ NEURONS
 0/1 Nearest object is pepper?
 0/1 Nearest object is obstacle?
 0/1 Next cell is free to move?
-for all 3 directions
+for all 4 directions
+
+write argument episodes, 

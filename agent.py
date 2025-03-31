@@ -8,28 +8,38 @@ from datetime import datetime
 import random
 
 class SnakeAgent:
-    INPUT_SIZE = 12
+    INPUT_SIZE = 16
     OUTPUT_SIZE = 4
+    BATCH_SIZE = 256
     def __init__(self, board):
         self.board = board
         self.model = self._create_model()
         self.epsilon = 1.0
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.9999
-        self.memory = deque(maxlen = 400000)
+        self.epsilon_decay = 0.9998
+        self.memory = deque(maxlen = 30000)
         self.target_model = self._create_model()
         self.update_target_counter = 0
         self.evaluation_mode = False
         self.folder_name = 'models'
+        self._init_replay_buffers(self.BATCH_SIZE)
+
+    def _init_replay_buffers(self, max_batch_size):
+        """Pre-allocate memory arrays for replay buffer to improve performance"""
+        self.replay_states = np.zeros((max_batch_size, self.INPUT_SIZE), dtype=np.float32)
+        self.replay_actions = np.zeros(max_batch_size, dtype=np.int32)
+        self.replay_rewards = np.zeros(max_batch_size, dtype=np.float32)
+        self.replay_next_states = np.zeros((max_batch_size, self.INPUT_SIZE), dtype=np.float32)
+        self.replay_dones = np.zeros(max_batch_size, dtype=np.bool_)
+        self.max_batch_size = max_batch_size
 
     def _create_model(self):
             model = keras.Sequential([
-                keras.layers.Dense(64, input_shape=(self.INPUT_SIZE,), activation='relu'),
-                keras.layers.Dense(32, activation='relu'),
+                keras.layers.Dense(32, input_shape=(self.INPUT_SIZE,), activation='relu'),
                 keras.layers.Dense(16, activation='relu'),
                 keras.layers.Dense(self.OUTPUT_SIZE, activation='linear')
             ])
-            model.compile(optimizer='adam', loss='mse')
+            model.compile(optimizer='adam', loss='mse', jit_compile=True)
             return model
 
     def get_state(self):
@@ -41,46 +51,50 @@ class SnakeAgent:
         tail_y = self.board.tail_y
         tail_x = self.board.tail_x
         SIZE = 10
-        SIZE_INV = 0.111111111  #  1/(SIZE-1) = 1/9
 
-        directions = self.board.DIRECTIONS
-        dir_idx = self.board.moving_dir
+        for i, (dy, dx) in enumerate(self.board.DIRECTIONS):
+            base_idx = i << 2  # * 4
 
-        direction_indices = [(dir_idx-1)%4, dir_idx, (dir_idx+1)%4]
-        direction_vectors = [directions[idx] for idx in direction_indices]
+            next_y = head_y + dy
+            next_x = head_x + dx
+            if 0 <= next_y < SIZE and 0 <= next_x < SIZE:
+                next_cell = table[next_y][next_x]
+                if next_cell != self.board.TAIL or (next_y == tail_y and next_x == tail_x):
+                    state[base_idx + 3] = 1  # Next cell is free to move
 
-        for i, (dy, dx) in enumerate(direction_vectors):
             y = head_y
             x = head_x
-            dist = 0
-            base_idx = i << 2
+            nearest_object_found = False
 
-            while True:
+            while not nearest_object_found:
                 y += dy
                 x += dx
+
+                # Out of bounds check
                 if not (0 <= y < SIZE and 0 <= x < SIZE):
-                    state[base_idx] = 1
-                    break
+                    state[base_idx + 2] = 1  # Obstacle (wall)
+                    nearest_object_found = True
+                    continue
 
                 cell = table[y][x]
-                if cell == self.board.TAIL and (y != tail_y or x != tail_x):
-                    state[base_idx] = 1
-                    break
-                if cell == self.board.APPLE:
-                    state[base_idx + 1] = 1
-                    break
-                if cell == self.board.PEPPER:
-                    state[base_idx + 2] = 1
-                    break
-                dist += 1
 
-            state[base_idx + 3] = dist * SIZE_INV
+                # Check what we found
+                if cell == self.board.EMPTY:
+                    continue
+                elif cell == self.board.TAIL and (y != tail_y or x != tail_x):
+                    state[base_idx + 2] = 1  # Obstacle (tail)
+                    nearest_object_found = True
+                elif cell == self.board.APPLE:
+                    state[base_idx + 0] = 1  # Food
+                    nearest_object_found = True
+                elif cell == self.board.PEPPER:
+                    state[base_idx + 1] = 1  # Pepper
+                    nearest_object_found = True
 
         return state
 
     def get_action(self, state):
         """AI will choose his action"""
-        # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT, 3 = BACKWARDS
         if np.random.rand() <= self.epsilon and not self.evaluation_mode:
             action = random.randint(0, self.OUTPUT_SIZE - 1)
             self.board.last_move_random = True
@@ -90,8 +104,7 @@ class SnakeAgent:
             action = np.argmax(q_values)
             self.board.last_move_random = False
 
-
-        return action  # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT, 3 = BACKWARDS
+        return action
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
@@ -131,7 +144,7 @@ class SnakeAgent:
 
     def train(self, state, action, reward, next_state, done):
         self.remember(state, action, reward, next_state, done)
-        self.replay(1024)
+        self.replay(self.BATCH_SIZE)
 
     def replay(self, batch_size):
         if len(self.memory) < batch_size:
@@ -139,11 +152,11 @@ class SnakeAgent:
 
         indices = np.random.choice(len(self.memory), batch_size, replace=False)
 
-        states = np.zeros((batch_size, self.INPUT_SIZE), dtype=np.float32)
-        actions = np.zeros(batch_size, dtype=np.int32)
-        rewards = np.zeros(batch_size, dtype=np.float32)
-        next_states = np.zeros((batch_size, self.INPUT_SIZE), dtype=np.float32)
-        dones = np.zeros(batch_size, dtype=np.bool_)
+        states = self.replay_states[:batch_size]
+        actions = self.replay_actions[:batch_size]
+        rewards = self.replay_rewards[:batch_size]
+        next_states = self.replay_next_states[:batch_size]
+        dones = self.replay_dones[:batch_size]
 
         for i, idx in enumerate(indices):
             experience = self.memory[idx]
@@ -153,14 +166,12 @@ class SnakeAgent:
             next_states[i] = experience[3]
             dones[i] = experience[4]
 
-        current_q_values = self.model.predict(states, verbose=0)
-        next_q_values = self.target_model.predict(next_states, verbose=0)
+        current_q_values = self.model(states, training=False).numpy()
+        next_q_values = self.target_model(next_states, training=False).numpy()
 
         max_next_q = np.max(next_q_values, axis=1)
         targets = np.where(dones, rewards, rewards + 0.95 * max_next_q)
 
-
-        # updates the neural network's Q-values with the newly calculated target values, but only for the actions that were actually taken in each experience
         for i in range(batch_size):
             current_q_values[i, actions[i]] = targets[i]
 
@@ -169,14 +180,8 @@ class SnakeAgent:
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
 
-        # self.update_target_counter += 1
-        # if self.update_target_counter > 700:
-        #     self.target_model.set_weights(self.model.get_weights())
-        #     self.update_target_counter = 0
-
-        # TRY soft update
         new_weights = []
         target_weights = self.target_model.get_weights()
         for i, model_weights in enumerate(self.model.get_weights()):
-            new_weights.append(0.01 * model_weights + 0.99 * target_weights[i])
+            new_weights.append(0.01 * model_weights + 0.99 * target_weights[i])  # adjastable
         self.target_model.set_weights(new_weights)

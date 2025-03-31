@@ -17,7 +17,7 @@ def analyze_model(model_path):
             df = pd.DataFrame(data, columns=['epoch', 'length'])
 
             # Get last 300 iterations
-            last_300 = df.tail(300)
+            last_300 = df.tail(100)
 
             # Calculate average length
             avg_length = last_300['length'].mean()

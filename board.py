@@ -31,7 +31,7 @@ class init_board:
         self.head_x = 0
         self.tail_y = 0
         self.tail_x = 0
-        self.moving_dir = 0  # absolute LEFT 0, UP 1, RIGHT 2, DOWN 3
+        self.moving_dir = 0
         self.length = 3
         self.snake_segments = [] # whole snake will be stored here from tail to head in tuple (y, x)
         self.last_move_random = False
@@ -148,12 +148,9 @@ class init_board:
                     return (y, x)
         return None
 
-    def make_move(self, action): # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT, 3 = BACKWARDS
-        # convert relative action (based on current moving direction) to absolute direction
-        # LEFT, UP, RIGHT, DOWN
-        direction = (self.moving_dir - 1 + action) % 4
-        dy = self.DIRECTIONS[direction][0]
-        dx = self.DIRECTIONS[direction][1]
+    def make_move(self, action):
+        dy = self.DIRECTIONS[action][0]
+        dx = self.DIRECTIONS[action][1]
         SIZE = 10
 
         new_y = dy + self.head_y
@@ -226,6 +223,6 @@ class init_board:
             self.head_x = new_x
             self.table[new_y][new_x] = self.HEAD
 
-        self.moving_dir = direction
+        self.moving_dir = action
 
         return False

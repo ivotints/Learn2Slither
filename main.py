@@ -49,7 +49,7 @@ def main():
         max_length = 3
         steps = 0
         steps_no_food = 0
-        max_steps = 100 # to prevent loops
+        max_steps = 100  # to prevent loops
         if not running:
             break
 
@@ -85,39 +85,25 @@ def main():
             if not running:
                 break
 
-            action = agent.get_action(state)  # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT, 3 = BACKWARDS
+            food_distance_before = min(
+                abs(board.head_y - board.apple_1[0]) + abs(board.head_x - board.apple_1[0]),
+                abs(board.head_y - board.apple_2[0]) + abs(board.head_x - board.apple_2[0])
+            )
+
+            action = agent.get_action(state)
             old_length = board.length
-
-            # apple_1_distance = abs(board.head_y - board.apple_1[0]) + abs(board.head_x - board.apple_1[1])
-            # apple_2_distance = abs(board.head_y - board.apple_2[0]) + abs(board.head_x - board.apple_2[1])
-            # old_food_distance = min(apple_1_distance, apple_2_distance)
-
             done = board.make_move(action)
 
-
-
-
-
-            # apple_1_distance = abs(board.head_y - board.apple_1[0]) + abs(board.head_x - board.apple_1[1])
-            # apple_2_distance = abs(board.head_y - board.apple_2[0]) + abs(board.head_x - board.apple_2[1])
-            # new_food_distance = min(apple_1_distance, apple_2_distance)
-
-            # if done: # died
-            #     reward = -20.0
-            # elif board.length > old_length: # eated apple
-            #     reward = 1.0
-            #     steps_no_food = 0
-            #     max_length = max(board.length, max_length)
-            # elif board.length < old_length: # eated pepper
-            #     reward = -2.0
-            # elif new_food_distance < old_food_distance: # moved closer to the food
-            #     reward = 0
-            # elif new_food_distance == old_food_distance:
-            #     reward = -0.1
-            # elif new_food_distance > old_food_distance: # moved away from food
-            #     reward = -0.2
+            food_distance_after = min(
+                abs(board.head_y - board.apple_1[0]) + abs(board.head_x - board.apple_1[1]),
+                abs(board.head_y - board.apple_2[0]) + abs(board.head_x - board.apple_2[1])
+)
 
             reward = -0.01
+            if food_distance_after < food_distance_before:
+                reward += 0.05
+            elif food_distance_after > food_distance_before:
+                reward -= 0.05
             if board.length > old_length:
                 reward = 1.0
                 steps_no_food = 0
