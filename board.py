@@ -34,6 +34,8 @@ class init_board:
         self.moving_dir = 0  # absolute LEFT 0, UP 1, RIGHT 2, DOWN 3
         self.length = 3
         self.snake_segments = [] # whole snake will be stored here from tail to head in tuple (y, x)
+        self.last_move_random = False
+
 
         self._init_snake()
         self.apple_1 = self.set_cell_to_random_empty(self.APPLE)
@@ -60,28 +62,29 @@ class init_board:
 
         return self
 
-
-
     def _place_adjacent_segment(self, y, x):
         """Find and return coordinates for a new segment adjacent to given position"""
         empty_cells = []
+        size_y = self.size_y
+        size_x = self.size_x
+
         for dir_y, dir_x in self.DIRECTIONS:
             new_y = y + dir_y
             new_x = x + dir_x
-            if self.is_in_table(new_y, new_x) and self.is_empty(new_y, new_x):
+
+            if (0 <= new_y < size_y and 0 <= new_x < size_x and
+                    self.table[new_y][new_x] == self.EMPTY):
+
+                if (y == self.head_y and x == self.head_x):
+                    self.moving_dir = self.DIRECTIONS.index((y - new_y, x - new_x))
+                    return (new_y, new_x)
+
                 empty_cells.append((new_y, new_x))
 
         if not empty_cells:
             raise RuntimeError("No empty adjacent cells found")
 
-        if (y, x) == (self.head_y, self.head_x):
-            tmp = random.randint(0, len(empty_cells) - 1)
-            a, b = empty_cells[tmp]
-            self.moving_dir = self.DIRECTIONS.index((y - a, x - b))
-            return empty_cells[tmp]
-
         return empty_cells[random.randint(0, len(empty_cells) - 1)]
-
 
     def _init_snake(self):
         """Initialize snake with head and two tail segments"""
@@ -89,11 +92,11 @@ class init_board:
 
         self.second_tail_y, self.second_tail_x = self._place_adjacent_segment(
             self.head_y, self.head_x)
-        self.set_cell(self.second_tail_y, self.second_tail_x, self.TAIL)
+        self.table[self.second_tail_y][self.second_tail_x] = self.TAIL
 
         self.tail_y, self.tail_x = self._place_adjacent_segment(
             self.second_tail_y, self.second_tail_x)
-        self.set_cell(self.tail_y, self.tail_x, self.TAIL)
+        self.table[self.tail_y][self.tail_x] = self.TAIL
 
         self.snake_segments.append((self.tail_y, self.tail_x))
         self.snake_segments.append((self.second_tail_y, self.second_tail_x))
@@ -130,21 +133,20 @@ class init_board:
         return self.table[y][x]
 
     def set_cell_to_random_empty(self, value):
-        y = 0
-        x = 0
-        i = 0
-        while i < 100:
+        for _ in range(100):
             y = random.randint(0, self.size_y - 1)
             x = random.randint(0, self.size_x - 1)
-            if self.set_to_empty(y, x, value):
-                return (y, x)
-            i += 1
 
-        # if we here mean that we are so unlucky to find random empty cell, I will have to assign first empty cell for that
+            if 0 <= y < self.size_y and 0 <= x < self.size_x and self.table[y][x] == self.EMPTY:
+                self.table[y][x] = value
+                return (y, x)
+
         for y in range(self.size_y):
             for x in range(self.size_x):
-                if self.set_to_empty(y, x, value):
+                if self.table[y][x] == self.EMPTY:
+                    self.table[y][x] = value
                     return (y, x)
+        return None
 
     def make_move(self, action): # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT, 3 = BACKWARDS
         # convert relative action (based on current moving direction) to absolute direction
@@ -162,7 +164,7 @@ class init_board:
 
         cell = self.table[new_y][new_x]
         if cell == self.TAIL:
-            if not (new_y == self.tail_y and new_x == self.tail_x):
+            if not (new_y == self.tail_y and new_x == self.tail_x) or self.length == 2:
                 # print("Death from canibalism")
                 return True
             else:

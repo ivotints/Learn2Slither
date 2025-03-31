@@ -1,1 +1,1 @@
-python3 main.py -ng --name 3_vision
+python3 main.py -ng --name 3_vis_4_out_100_neur_soft_mem_rwrd

@@ -15,6 +15,8 @@ class init_graphics:
         self.cell_size = self.window.get_width() // self.board.size_x  # 80
         self.green_bokeh = None
         self.red_bokeh = None
+        self.show_vision = False
+        self.show_my_vision = False
 
     def _draw_initial_board(self):
         """Draws initial board without snake and food"""
@@ -77,8 +79,30 @@ class init_graphics:
             get_purple.counter += 1
             return get_purple.colors[get_purple.counter % (CYCLE * 2)]
 
+        def get_red():
+            CYCLE = 16
+            if not hasattr(get_red, 'colors'):
+                get_red.colors = []
+                get_red.counter = 0
+                bright_red = (220, 60, 60)
+                dark_red = (170, 40, 40)
+                for i in range(CYCLE):
+                    r = int(bright_red[0] - (bright_red[0] - dark_red[0]) * (i / CYCLE))
+                    g = int(bright_red[1] - (bright_red[1] - dark_red[1]) * (i / CYCLE))
+                    b = int(bright_red[2] - (bright_red[2] - dark_red[2]) * (i / CYCLE))
+                    get_red.colors.append((r, g, b))
+                for i in range(CYCLE):
+                    r = int(dark_red[0] + (bright_red[0] - dark_red[0]) * (i / CYCLE))
+                    g = int(dark_red[1] + (bright_red[1] - dark_red[1]) * (i / CYCLE))
+                    b = int(dark_red[2] + (bright_red[2] - dark_red[2]) * (i / CYCLE))
+                    get_red.colors.append((r, g, b))
+            get_red.counter += 1
+            return get_red.colors[get_red.counter % (CYCLE * 2)]
+
         def get_shadow():
             return (10, 10, 10)
+
+        color_func = get_red if self.board.last_move_random else get_purple
 
         def draw_segment(start_pos, end_pos, size, color_function):
             start_y, start_x = start_pos
@@ -96,18 +120,17 @@ class init_graphics:
                 pygame.draw.circle(self.window, color_function(), (center_x, center_y), size)
 
         for i in range(len(self.board.snake_segments) - 1):
-            draw_segment(self.board.snake_segments[i], self.board.snake_segments[i + 1], min(30, 17 + len(self.board.snake_segments) // 2) + 4, get_shadow) # adjust growth rate
+            draw_segment(self.board.snake_segments[i], self.board.snake_segments[i + 1], min(30, 17 + len(self.board.snake_segments) // 2) + 4, get_shadow)
 
         for i in range(len(self.board.snake_segments) - 1):
-            draw_segment(self.board.snake_segments[i], self.board.snake_segments[i + 1], min(30, 17 + len(self.board.snake_segments) // 2), get_purple)
+            draw_segment(self.board.snake_segments[i], self.board.snake_segments[i + 1], min(30, 17 + len(self.board.snake_segments) // 2), color_func)
 
         if (len(self.board.snake_segments) < 2):
             start_y, start_x = self.board.snake_segments[-1]
             start_center_x = start_x * self.cell_size + self.cell_size // 2
             start_center_y = start_y * self.cell_size + self.cell_size // 2
             pygame.draw.circle(self.window, get_shadow(), (start_center_x, start_center_y), min(30, 17 + len(self.board.snake_segments) // 2) + 4)
-            pygame.draw.circle(self.window, get_purple(), (start_center_x, start_center_y), min(30, 17 + len(self.board.snake_segments) // 2))
-
+            pygame.draw.circle(self.window, color_func(), (start_center_x, start_center_y), min(30, 17 + len(self.board.snake_segments) // 2))
 
         self._draw_snake_eyes()
 
@@ -192,4 +215,88 @@ class init_graphics:
         self._draw_snake()
         self._draw_food()
 
+        if self.show_vision:
+            self._draw_snake_vision_simple()
+        if self.show_my_vision:
+            self._draw_snake_vision()
+
         pygame.display.flip()
+
+    def _draw_snake_vision_simple(self):
+        head_y = self.board.head_y
+        head_x = self.board.head_x
+        directions = self.board.DIRECTIONS
+
+        visible_directions = directions
+
+        overlay = pygame.Surface((self.window.get_width(), self.window.get_height()), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 255))
+
+        for dy, dx in visible_directions:
+            y, x = head_y, head_x
+            while True:
+                y += dy
+                x += dx
+                if not (0 <= y < self.board.size_y and 0 <= x < self.board.size_x):
+                    break
+
+                rect = pygame.Rect(
+                    x * self.cell_size,
+                    y * self.cell_size,
+                    self.cell_size,
+                    self.cell_size
+                )
+                pygame.draw.rect(overlay, (0, 0, 0, 0), rect)
+
+        head_rect = pygame.Rect(
+            head_x * self.cell_size,
+            head_y * self.cell_size,
+            self.cell_size,
+            self.cell_size
+        )
+        pygame.draw.rect(overlay, (0, 0, 0, 0), head_rect)
+
+        self.window.blit(overlay, (0, 0))
+
+    def _draw_snake_vision(self):
+        """Visualize how the snake sees the board by darkening non-visible areas"""
+        head_y = self.board.head_y
+        head_x = self.board.head_x
+        dir_idx = self.board.moving_dir
+        directions = self.board.DIRECTIONS
+
+        direction_indices = [(dir_idx-1)%4, dir_idx, (dir_idx+1)%4]
+        visible_directions = [directions[idx] for idx in direction_indices]
+
+        overlay = pygame.Surface((self.window.get_width(), self.window.get_height()), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 180))
+
+        for dy, dx in visible_directions:
+            y, x = head_y, head_x
+            while True:
+                y += dy
+                x += dx
+                if not (0 <= y < self.board.size_y and 0 <= x < self.board.size_x):
+                    break
+
+                cell = self.board.table[y][x]
+                if cell == self.board.TAIL and (y != self.board.tail_y or x != self.board.tail_x):
+                    break
+
+                rect = pygame.Rect(
+                    x * self.cell_size,
+                    y * self.cell_size,
+                    self.cell_size,
+                    self.cell_size
+                )
+                pygame.draw.rect(overlay, (0, 0, 0, 0), rect)
+
+        head_rect = pygame.Rect(
+            head_x * self.cell_size,
+            head_y * self.cell_size,
+            self.cell_size,
+            self.cell_size
+        )
+        pygame.draw.rect(overlay, (0, 0, 0, 0), head_rect)
+
+        self.window.blit(overlay, (0, 0))

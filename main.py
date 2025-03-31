@@ -40,6 +40,8 @@ def main():
     episodes = 10000
     save_frequency = 50
     running = True
+    # visited_positions = set()
+
 
     for episode in range (episodes):
         state = agent.get_state()
@@ -53,7 +55,7 @@ def main():
         if not running:
             break
 
-        while running and not done and steps_no_food < max_steps:
+        while running and not done:
             if display_graphics:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -61,6 +63,10 @@ def main():
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
                             running = False
+                        elif event.key == pygame.K_x:
+                            graphics.show_vision = not graphics.show_vision
+                        elif event.key == pygame.K_z:
+                            graphics.show_my_vision = not graphics.show_my_vision
                         elif event.key >= pygame.K_0 and event.key <= pygame.K_9:
                             key_num = event.key - pygame.K_0
                             if key_num == 0:
@@ -90,6 +96,10 @@ def main():
 
             done = board.make_move(action)
 
+
+
+
+
             # apple_1_distance = abs(board.head_y - board.apple_1[0]) + abs(board.head_x - board.apple_1[1])
             # apple_2_distance = abs(board.head_y - board.apple_2[0]) + abs(board.head_x - board.apple_2[1])
             # new_food_distance = min(apple_1_distance, apple_2_distance)
@@ -108,9 +118,14 @@ def main():
             #     reward = -0.1
             # elif new_food_distance > old_food_distance: # moved away from food
             #     reward = -0.2
+
             reward = -0.01
+            # if (board.head_y, board.head_x) in visited_positions:
+            #     reward -= 0.02
+            # visited_positions.add((board.head_y, board.head_x))
             if board.length > old_length:
                 reward = 1.0
+                # visited_positions.clear()
                 steps_no_food = 0
                 max_length = max(board.length,  max_length)
             elif board.length < old_length:
@@ -140,6 +155,7 @@ def main():
 
         if not evaluation_mode and (episode + 1) % save_frequency == 0:
             agent.save_model(episode + 1)
+            log_file.flush()
 
         board.reset()
 

@@ -21,3 +21,7 @@ difference between soft and hard update
 write all in c++
 
 how many layers will be enough? how many neurons?
+
+If it sees Green, reward for moving to it and punich for other
+
+Snake goes inside of itself. Can we us A* parh finding to predict 5 moves ahead that some move is deadly and punish for moving there?

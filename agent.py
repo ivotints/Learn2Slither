@@ -15,7 +15,7 @@ class SnakeAgent:
         self.model = self._create_model()
         self.epsilon = 1.0
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.999988
+        self.epsilon_decay = 0.9999
         self.memory = deque(maxlen = 400000)
         self.target_model = self._create_model()
         self.update_target_counter = 0
@@ -24,7 +24,7 @@ class SnakeAgent:
 
     def _create_model(self):
             model = keras.Sequential([
-                keras.layers.Dense(64, input_shape=(self.INPUT_SIZE,), activation='relu', use_bias=True),
+                keras.layers.Dense(64, input_shape=(self.INPUT_SIZE,), activation='relu'),
                 keras.layers.Dense(32, activation='relu'),
                 keras.layers.Dense(16, activation='relu'),
                 keras.layers.Dense(self.OUTPUT_SIZE, activation='linear')
@@ -83,10 +83,13 @@ class SnakeAgent:
         # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT, 3 = BACKWARDS
         if np.random.rand() <= self.epsilon and not self.evaluation_mode:
             action = random.randint(0, self.OUTPUT_SIZE - 1)
+            self.board.last_move_random = True
         else:
             state_tensor = np.expand_dims(state, axis=0)
             q_values = self.model(state_tensor)[0]
             action = np.argmax(q_values)
+            self.board.last_move_random = False
+
 
         return action  # 0 = LEFT, 1 = STRAIGHT, 2 = RIGHT, 3 = BACKWARDS
 
@@ -116,7 +119,7 @@ class SnakeAgent:
             try:
                 self.model = keras.models.load_model(model_path)
                 self.target_model = keras.models.load_model(model_path)
-                self.epsilon = 1 # self.epsilon_min
+                self.epsilon = 0.1 # self.epsilon_min
             except Exception as e:
                 import sys
                 print("\033[91mFailed to load model\033[0m")
