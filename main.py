@@ -40,8 +40,6 @@ def main():
     episodes = 10000
     save_frequency = 50
     running = True
-    # visited_positions = set()
-
 
     for episode in range (episodes):
         state = agent.get_state()
@@ -55,7 +53,7 @@ def main():
         if not running:
             break
 
-        while running and not done:
+        while running and not done and steps_no_food < max_steps:
             if display_graphics:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -107,11 +105,11 @@ def main():
             # if done: # died
             #     reward = -20.0
             # elif board.length > old_length: # eated apple
-            #     reward = 1.0 * (board.length)# add non linearity
+            #     reward = 1.0
             #     steps_no_food = 0
             #     max_length = max(board.length, max_length)
             # elif board.length < old_length: # eated pepper
-            #     reward = -2.0 * (board.length)
+            #     reward = -2.0
             # elif new_food_distance < old_food_distance: # moved closer to the food
             #     reward = 0
             # elif new_food_distance == old_food_distance:
@@ -120,12 +118,8 @@ def main():
             #     reward = -0.2
 
             reward = -0.01
-            # if (board.head_y, board.head_x) in visited_positions:
-            #     reward -= 0.02
-            # visited_positions.add((board.head_y, board.head_x))
             if board.length > old_length:
                 reward = 1.0
-                # visited_positions.clear()
                 steps_no_food = 0
                 max_length = max(board.length,  max_length)
             elif board.length < old_length:

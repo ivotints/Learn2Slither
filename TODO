@@ -1,27 +1,17 @@
-try to understand limitation of model's vision
-
-Later I will multithread learning, but not now.
-
-16 to 12 no walls.
-
-get rifd of going back
+write all in c++
 
 Implement normal path finding for reward to reward for moving in direction for food even if tailiis on the way (go around)
 
-bootstrapping
-
-Why gamma in belman euasion is 0.95?
-
 can we write a mentor/trainer for model? Or it will be too hard?
 
-have multiple starting positions with different length
+If it sees Green, reward for moving to it and punish for other
 
-difference between soft and hard update
+Snake goes inside of +itself. Can we us A* parh finding to predict 5 moves ahead that some move is deadly and punish for moving there?
 
-write all in c++
-
-how many layers will be enough? how many neurons?
-
-If it sees Green, reward for moving to it and punich for other
-
-Snake goes inside of itself. Can we us A* parh finding to predict 5 moves ahead that some move is deadly and punish for moving there?
+# idea
+NEURONS
+0/1 Nearest object is food?
+0/1 Nearest object is pepper?
+0/1 Nearest object is obstacle?
+0/1 Next cell is free to move?
+for all 3 directions
