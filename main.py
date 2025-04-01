@@ -85,25 +85,11 @@ def main():
             if not running:
                 break
 
-            food_distance_before = min(
-                abs(board.head_y - board.apple_1[0]) + abs(board.head_x - board.apple_1[0]),
-                abs(board.head_y - board.apple_2[0]) + abs(board.head_x - board.apple_2[0])
-            )
-
             action = agent.get_action(state)
             old_length = board.length
             done = board.make_move(action)
 
-            food_distance_after = min(
-                abs(board.head_y - board.apple_1[0]) + abs(board.head_x - board.apple_1[1]),
-                abs(board.head_y - board.apple_2[0]) + abs(board.head_x - board.apple_2[1])
-)
-
-            reward = -0.01
-            if food_distance_after < food_distance_before:
-                reward += 0.05
-            elif food_distance_after > food_distance_before:
-                reward -= 0.05
+            reward = 0
             if board.length > old_length:
                 reward = 1.0
                 steps_no_food = 0

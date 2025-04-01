@@ -1,1 +1,1 @@
-python3 main.py -ng --name 3_vis_4_out_100_neur_soft_mem_rwrd
+python3 main.py -ng --name Gorynich_v1.0_
