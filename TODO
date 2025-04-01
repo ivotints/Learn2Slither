@@ -8,4 +8,6 @@ If it sees Green, reward for moving to it and punish for other
 
 Snake goes inside of +itself. Can we us A* parh finding to predict 5 moves ahead that some move is deadly and punish for moving there?
 
-after training I need to detect tht model do not improve any more and run evaluation on it. 
+after training I need to detect tht model do not improve any more and run evaluation on it.
+
+nimba?
