@@ -1,1 +1,1 @@
-python3 main.py -ng --name Gorynich_v1.0_
+python3 main.py -ng --name Gorynich_v1.1_

@@ -41,7 +41,7 @@ def get_action_safe(self, state):
 
 def get_action_half_safe(self, state):
     if np.random.rand() <= self.epsilon and not self.evaluation_mode:
-        if np.random.rand() <= 0.5:
+        if np.random.rand() <= 0.9: # 90% chanse of safe random move
             safe_directions = []
             for i, (dy, dx) in enumerate(self.board.DIRECTIONS):
                 new_y = self.board.head_y + dy

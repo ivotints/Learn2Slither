@@ -8,12 +8,4 @@ If it sees Green, reward for moving to it and punish for other
 
 Snake goes inside of +itself. Can we us A* parh finding to predict 5 moves ahead that some move is deadly and punish for moving there?
 
-# idea
-NEURONS
-0/1 Nearest object is food?
-0/1 Nearest object is pepper?
-0/1 Nearest object is obstacle?
-0/1 Next cell is free to move?
-for all 4 directions
-
-write argument episodes, 
+after training I need to detect tht model do not improve any more and run evaluation on it. 
