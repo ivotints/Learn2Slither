@@ -63,8 +63,6 @@ def main():
                             running = False
                         elif event.key == pygame.K_x:
                             graphics.show_vision = not graphics.show_vision
-                        elif event.key == pygame.K_z:
-                            graphics.show_my_vision = not graphics.show_my_vision
                         elif event.key >= pygame.K_0 and event.key <= pygame.K_9:
                             key_num = event.key - pygame.K_0
                             if key_num == 0:

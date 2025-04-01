@@ -16,7 +16,6 @@ class init_graphics:
         self.green_bokeh = None
         self.red_bokeh = None
         self.show_vision = False
-        self.show_my_vision = False
 
     def _draw_initial_board(self):
         """Draws initial board without snake and food"""
@@ -217,8 +216,6 @@ class init_graphics:
 
         if self.show_vision:
             self._draw_snake_vision_simple()
-        if self.show_my_vision:
-            self._draw_snake_vision()
 
         pygame.display.flip()
 
@@ -238,49 +235,6 @@ class init_graphics:
                 y += dy
                 x += dx
                 if not (0 <= y < self.board.size_y and 0 <= x < self.board.size_x):
-                    break
-
-                rect = pygame.Rect(
-                    x * self.cell_size,
-                    y * self.cell_size,
-                    self.cell_size,
-                    self.cell_size
-                )
-                pygame.draw.rect(overlay, (0, 0, 0, 0), rect)
-
-        head_rect = pygame.Rect(
-            head_x * self.cell_size,
-            head_y * self.cell_size,
-            self.cell_size,
-            self.cell_size
-        )
-        pygame.draw.rect(overlay, (0, 0, 0, 0), head_rect)
-
-        self.window.blit(overlay, (0, 0))
-
-    def _draw_snake_vision(self):
-        """Visualize how the snake sees the board by darkening non-visible areas"""
-        head_y = self.board.head_y
-        head_x = self.board.head_x
-        dir_idx = self.board.moving_dir
-        directions = self.board.DIRECTIONS
-
-        direction_indices = [(dir_idx-1)%4, dir_idx, (dir_idx+1)%4]
-        visible_directions = [directions[idx] for idx in direction_indices]
-
-        overlay = pygame.Surface((self.window.get_width(), self.window.get_height()), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 180))
-
-        for dy, dx in visible_directions:
-            y, x = head_y, head_x
-            while True:
-                y += dy
-                x += dx
-                if not (0 <= y < self.board.size_y and 0 <= x < self.board.size_x):
-                    break
-
-                cell = self.board.table[y][x]
-                if cell == self.board.TAIL and (y != self.board.tail_y or x != self.board.tail_x):
                     break
 
                 rect = pygame.Rect(
