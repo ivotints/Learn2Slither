@@ -164,10 +164,6 @@ def run_training(agent, board, graphics, args):
                 print()
                 if stop:
                     break
-
-        if running:
-            agent.save_model(episodes)
-
     finally:
         log_file.close()
         eval_file.close()

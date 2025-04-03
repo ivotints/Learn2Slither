@@ -51,8 +51,8 @@ class SnakeAgent:
         )
 
     def get_action(self, state):
-        return(get_action_dangerous(self, state))
         return(get_action_safe(self, state))
+        return(get_action_dangerous(self, state))
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))

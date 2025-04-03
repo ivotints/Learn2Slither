@@ -12,8 +12,8 @@ after training I need to detect tht model do not improve any more and run evalua
 
 
 
-after 50 epochs model is saved and has to be evaluated. It should be runned in the evaluation mode for 50 iterations to find averege length. Then results of the evaluation should be written to the model's folder in to the file 'evaluation.txt'.
+after 50 epochs model is saved and has to be evaluated. It should be runned in the evaluation mode for 100 iterations to find averege length. Then results of the evaluation should be written to the model's folder in to the file 'evaluation.txt'.
 
-Then averege of the model evaluation is saved in main. Training continues for next 50 iterations. Then evaluation cycle repeats. If new evaluation is better then previous, the best is rewriten. If new results are worser - we start count down. If next 5 models do not show any improvement in the averege snake's length - training stops.
+Then averege of the model evaluation is saved in main. Training continues for next 50 iterations. Then evaluation cycle repeats. If new evaluation is better then previous, the best is rewriten. If new results are worser - we start count down. If next 10 models do not show any improvement in the averege snake's length - training stops.
 
 Study overall should never stop - new snake with adjusted parameters should start. It will create file 'model_settings.txt' in model's folder and change them a bit from the original settings.txt in root folder
