@@ -1,17 +1,20 @@
 import os
 import contextlib
+import argparse
+import signal
+import sys
+import statistics
 with open(os.devnull, 'w') as f, contextlib.redirect_stdout(f):
     import pygame
 from board import init_board
 from graphics import init_graphics
-import argparse
 from agent import SnakeAgent
-import statistics
 
 def setup_argparser():
-    parser = argparse.ArgumentParser(description="Snake game with RL")
-    parser.add_argument('--no_graphics', '-ng', action='store_true',  help='Turn off graphics')
-    parser.add_argument('--evaluation_mode', '-e', action='store_true', help='Turn off training')
+    """Set up and return the argument parser for command-line arguments."""
+    parser = argparse.ArgumentParser(description="Snake game with Reinforcement Learning")
+    parser.add_argument('--no_graphics', '-ng', action='store_true', help='Turn off graphics')
+    parser.add_argument('--evaluation_mode', '-e', action='store_true', help='Run in evaluation mode (no training)')
     parser.add_argument('--load_model', '-lm', type=str, help='Path to model to load')
     parser.add_argument('--name', '-n', type=str, default='model', help='Name of model folder')
     return parser
@@ -19,12 +22,13 @@ def setup_argparser():
 def evaluate_model(agent, board, evaluation_episodes):
     agent.evaluation_mode = True
     lengths = []
+
     for _ in range(evaluation_episodes):
         state = agent.get_state()
         done = False
         max_length = 3
         steps_no_food = 0
-        max_steps = 100  # to prevent loops
+        max_steps = 100
 
         while not done and steps_no_food < max_steps:
             action = agent.get_action(state)
@@ -44,11 +48,12 @@ def evaluate_model(agent, board, evaluation_episodes):
     agent.evaluation_mode = False
     return statistics.mean(lengths)
 
-def evaluation(episode, agent, board, eval_frequency, eval_file, best_avg_length, poor_performance_count):
+def periodic_evaluation(episode, agent, board, eval_frequency, eval_file, best_avg_length, poor_performance_count):
     print(f"Evaluating model at episode {episode}...")
     avg_length = evaluate_model(agent, board, eval_frequency)
 
-    evaluation_result = f"Episode {episode}: Average length = {avg_length:.2f}\n"
+    record = "" if best_avg_length > avg_length else " - record!"
+    evaluation_result = f"Episode {episode}: Average length = {avg_length:.2f}{record}\n"
     print(evaluation_result, end="")
     eval_file.write(evaluation_result)
     eval_file.flush()
@@ -68,13 +73,18 @@ def evaluation(episode, agent, board, eval_frequency, eval_file, best_avg_length
     board.reset()
     return stop_training, best_avg_length, poor_performance_count
 
-def main():
-    args = setup_argparser().parse_args()
-    board = init_board()
-    agent = SnakeAgent(board)
-    display_graphics = not args.no_graphics
-    evaluation_mode = args.evaluation_mode
-    agent.evaluation_mode = evaluation_mode
+def print_evaluation_summary(evaluation_lengths):
+    if not evaluation_lengths:
+        return
+
+    avg_length = statistics.mean(evaluation_lengths)
+    print(f"\n\nEvaluation Results:")
+    print(f"Total games played: {len(evaluation_lengths)}")
+    print(f"Average snake length: {avg_length:.2f}")
+    print(f"Maximum length achieved: {max(evaluation_lengths)}")
+    print(f"Minimum length achieved: {min(evaluation_lengths) if evaluation_lengths else 0}")
+
+def run_training(agent, board, graphics, args):
     agent.set_folder_name(args.name)
     log_file = open(os.path.join("models", agent.folder_name, 'logs.txt'), 'a')
     eval_file = open(os.path.join("models", agent.folder_name, 'evaluation.txt'), 'a')
@@ -82,15 +92,6 @@ def main():
     fps = 18
     step_by_step_mode = False
     wait_for_step = False
-
-    if args.load_model:
-        agent.load_model(args.load_model)
-
-    if display_graphics:
-        graphics = init_graphics(board)
-    else:
-        graphics = None
-
     episodes = 10000
     save_frequency = 50
     running = True
@@ -98,100 +99,206 @@ def main():
     best_avg_length = 0
     poor_performance_count = 0
 
-    for episode in range(1, episodes):
-        state = agent.get_state()
-        total_reward = 0
-        reward = 0
-        done = False
-        max_length = 3
-        steps = 0
-        steps_no_food = 0
-        max_steps = 100  # to prevent loops
-        if not running:
-            break
-
-        while running and not done and steps_no_food < max_steps:
-            if display_graphics:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        running = False
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_ESCAPE:
-                            running = False
-                        elif event.key == pygame.K_x:
-                            graphics.show_vision = not graphics.show_vision
-                        elif event.key >= pygame.K_0 and event.key <= pygame.K_9:
-                            key_num = event.key - pygame.K_0
-                            if key_num == 0:
-                                step_by_step_mode = True
-                                wait_for_step = True
-                                print("Step-by-step mode enabled. Press SPACE to advance.")
-                            else:
-                                step_by_step_mode = False
-                                fps = 2 + (key_num - 1) * 2
-                                print(f"Speed set to {fps} fps")
-                        elif event.key == pygame.K_SPACE and step_by_step_mode:
-                            wait_for_step = False
-
-            if step_by_step_mode and wait_for_step:
-                pygame.time.wait(10)
-                continue
-
+    try:
+        for episode in range(1, episodes):
             if not running:
                 break
 
-            action = agent.get_action(state)
-            old_length = board.length
-            done = board.make_move(action)
+            state = agent.get_state()
+            total_reward = 0
+            done = False
+            max_length = 3
+            steps = 0
+            steps_no_food = 0
+            max_steps = 100
 
-            reward = 0
-            if board.length > old_length:
-                reward = 1.0
-                steps_no_food = 0
-                max_length = max(board.length,  max_length)
-            elif board.length < old_length:
-                reward = -1.0
-            if done:
-                reward = -5.0
+            while running and not done and steps_no_food < max_steps:
+                if graphics:
+                    running, step_by_step_mode, wait_for_step, fps = handle_ui_events(
+                        graphics, step_by_step_mode, wait_for_step, fps
+                    )
 
-            total_reward += reward
+                if step_by_step_mode and wait_for_step:
+                    pygame.time.wait(10)
+                    continue
 
-            next_state = agent.get_state()
-            if not evaluation_mode:
+                if not running:
+                    break
+
+                action = agent.get_action(state)
+                old_length = board.length
+                done = board.make_move(action)
+
+                reward = calculate_reward(board, old_length, done)
+                total_reward += reward
+
+                if board.length > old_length:
+                    steps_no_food = 0
+                    max_length = max(board.length, max_length)
+
+                next_state = agent.get_state()
                 agent.train(state, action, reward, next_state, done)
-            state = next_state
+                state = next_state
 
-            steps += 1
-            steps_no_food += 1
+                steps += 1
+                steps_no_food += 1
 
-            if display_graphics:
-                graphics.draw_board()
-                graphics.clock.tick(fps)
-                if step_by_step_mode:
-                    wait_for_step = True
+                if graphics:
+                    graphics.draw_board()
+                    graphics.clock.tick(fps)
+                    if step_by_step_mode:
+                        wait_for_step = True
 
-        log_msg = f"{episode} rwrd {total_reward:.1f} len {max_length} steps {steps} mem {len(agent.memory)}\n"
-        print(log_msg, end="")
-        log_file.write(log_msg)
-        board.reset()
+            log_msg = f"{episode} rwrd {total_reward:.1f} len {max_length} steps {steps} mem {len(agent.memory)}\n"
+            print(log_msg, end="")
+            log_file.write(log_msg)
 
-        if not evaluation_mode and (episode) % save_frequency == 0:
-            agent.save_model(episode)
-            log_file.flush()
-            stop, best_avg_length, poor_performance_count = evaluation(
-                episode, agent, board, 100, eval_file, best_avg_length, poor_performance_count
-            )
-            print()
-            if stop:
+            board.reset()
+
+            if episode % save_frequency == 0:
+                agent.save_model(episode)
+                log_file.flush()
+                stop, best_avg_length, poor_performance_count = periodic_evaluation(
+                    episode, agent, board, 100, eval_file, best_avg_length, poor_performance_count
+                )
+                print()
+                if stop:
+                    break
+
+        if running:
+            agent.save_model(episodes)
+
+    finally:
+        log_file.close()
+        eval_file.close()
+
+def run_evaluation(agent, board, graphics):
+    fps = 18
+    step_by_step_mode = False
+    wait_for_step = False
+    episodes = 10000
+    running = True
+
+    evaluation_lengths = []
+
+    def signal_handler(sig, frame):
+        print_evaluation_summary(evaluation_lengths)
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, signal_handler)
+
+    try:
+        for episode in range(1, episodes):
+            if not running:
                 break
 
-    if not evaluation_mode and running:
-        agent.save_model(episodes)
-    if display_graphics:
-        pygame.quit()
+            state = agent.get_state()
+            done = False
+            max_length = 3
+            steps = 0
+            steps_no_food = 0
+            max_steps = 100
 
-    log_file.close()
-    eval_file.close()
+            while running and not done and steps_no_food < max_steps:
+                if graphics:
+                    running, step_by_step_mode, wait_for_step, fps = handle_ui_events(
+                        graphics, step_by_step_mode, wait_for_step, fps
+                    )
+
+                    if not running:
+                        print_evaluation_summary(evaluation_lengths)
+                        break
+
+                if step_by_step_mode and wait_for_step:
+                    pygame.time.wait(10)
+                    continue
+
+                action = agent.get_action(state)
+                old_length = board.length
+                done = board.make_move(action)
+
+                if board.length > old_length:
+                    steps_no_food = 0
+                    max_length = max(board.length, max_length)
+
+                steps_no_food += 1
+                steps += 1
+                state = agent.get_state()
+
+                if graphics:
+                    graphics.draw_board()
+                    graphics.clock.tick(fps)
+                    if step_by_step_mode:
+                        wait_for_step = True
+
+            log_msg = f"{episode} len {max_length} steps {steps}\n"
+            print(log_msg, end="")
+
+            evaluation_lengths.append(max_length)
+
+            board.reset()
+
+        print_evaluation_summary(evaluation_lengths)
+
+    except KeyboardInterrupt:
+        print_evaluation_summary(evaluation_lengths)
+
+def handle_ui_events(graphics, step_by_step_mode, wait_for_step, fps):
+    running = True
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                running = False
+            elif event.key == pygame.K_x:
+                graphics.show_vision = not graphics.show_vision
+            elif event.key >= pygame.K_0 and event.key <= pygame.K_9:
+                key_num = event.key - pygame.K_0
+                if key_num == 0:
+                    step_by_step_mode = True
+                    wait_for_step = True
+                    print("Step-by-step mode enabled. Press SPACE to advance.")
+                else:
+                    step_by_step_mode = False
+                    fps = 2 + (key_num - 1) * 3
+                    print(f"Speed set to {fps} fps")
+            elif event.key == pygame.K_SPACE and step_by_step_mode:
+                wait_for_step = False
+
+    return running, step_by_step_mode, wait_for_step, fps
+
+def calculate_reward(board, old_length, done):
+    if board.length > old_length:
+        return 1.0  # Food eaten
+    elif board.length < old_length:
+        return -1.0  # Lost tail
+    elif done:
+        return -5.0  # Game over
+    return 0.0  # No change
+
+def main():
+    args = setup_argparser().parse_args()
+
+    board = init_board()
+    agent = SnakeAgent(board)
+    agent.evaluation_mode = args.evaluation_mode
+
+    if args.load_model:
+        agent.load_model(args.load_model)
+
+    graphics = None if args.no_graphics else init_graphics(board)
+
+    try:
+        if args.evaluation_mode:
+            run_evaluation(agent, board, graphics)
+        else:
+            run_training(agent, board, graphics, args)
+
+    finally:
+        if graphics:
+            pygame.quit()
 
 if __name__ == "__main__":
     main()
