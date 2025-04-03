@@ -10,7 +10,7 @@ Snake goes inside of +itself. Can we us A* parh finding to predict 5 moves ahead
 
 after training I need to detect tht model do not improve any more and run evaluation on it.
 
-nimba?
+
 
 after 50 epochs model is saved and has to be evaluated. It should be runned in the evaluation mode for 50 iterations to find averege length. Then results of the evaluation should be written to the model's folder in to the file 'evaluation.txt'.
 

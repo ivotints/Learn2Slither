@@ -1,5 +1,4 @@
 import os
-
 import contextlib
 with open(os.devnull, 'w') as f, contextlib.redirect_stdout(f):
     import pygame
@@ -7,6 +6,7 @@ from board import init_board
 from graphics import init_graphics
 import argparse
 from agent import SnakeAgent
+import statistics
 
 def setup_argparser():
     parser = argparse.ArgumentParser(description="Snake game with RL")
@@ -16,9 +16,60 @@ def setup_argparser():
     parser.add_argument('--name', '-n', type=str, default='model', help='Name of model folder')
     return parser
 
+def evaluate_model(agent, board, evaluation_episodes):
+    agent.evaluation_mode = True
+    lengths = []
+    for _ in range(evaluation_episodes):
+        state = agent.get_state()
+        done = False
+        max_length = 3
+        steps_no_food = 0
+        max_steps = 100  # to prevent loops
+
+        while not done and steps_no_food < max_steps:
+            action = agent.get_action(state)
+            old_length = board.length
+            done = board.make_move(action)
+
+            if board.length > old_length:
+                steps_no_food = 0
+                max_length = max(board.length, max_length)
+
+            steps_no_food += 1
+            state = agent.get_state()
+
+        lengths.append(max_length)
+        board.reset()
+
+    agent.evaluation_mode = False
+    return statistics.mean(lengths)
+
+def evaluation(episode, agent, board, eval_frequency, eval_file, best_avg_length, poor_performance_count):
+    print(f"Evaluating model at episode {episode}...")
+    avg_length = evaluate_model(agent, board, eval_frequency)
+
+    evaluation_result = f"Episode {episode}: Average length = {avg_length:.2f}\n"
+    print(evaluation_result, end="")
+    eval_file.write(evaluation_result)
+    eval_file.flush()
+
+    if avg_length > best_avg_length:
+        best_avg_length = avg_length
+        poor_performance_count = 0
+        print(f"New best average length: {best_avg_length:.2f}!")
+    else:
+        poor_performance_count += 1
+        print(f"No improvement. Poor performance count: {poor_performance_count}/10")
+
+    stop_training = poor_performance_count >= 10
+    if stop_training:
+        print("No improvement for 10 consecutive evaluations. Stopping training.")
+
+    board.reset()
+    return stop_training, best_avg_length, poor_performance_count
+
 def main():
-    parser = setup_argparser()
-    args = parser.parse_args()
+    args = setup_argparser().parse_args()
     board = init_board()
     agent = SnakeAgent(board)
     display_graphics = not args.no_graphics
@@ -26,6 +77,7 @@ def main():
     agent.evaluation_mode = evaluation_mode
     agent.set_folder_name(args.name)
     log_file = open(os.path.join("models", agent.folder_name, 'logs.txt'), 'a')
+    eval_file = open(os.path.join("models", agent.folder_name, 'evaluation.txt'), 'a')
 
     fps = 18
     step_by_step_mode = False
@@ -36,12 +88,17 @@ def main():
 
     if display_graphics:
         graphics = init_graphics(board)
+    else:
+        graphics = None
 
     episodes = 10000
     save_frequency = 50
     running = True
 
-    for episode in range (episodes):
+    best_avg_length = 0
+    poor_performance_count = 0
+
+    for episode in range(1, episodes):
         state = agent.get_state()
         total_reward = 0
         reward = 0
@@ -116,17 +173,25 @@ def main():
         log_msg = f"{episode} rwrd {total_reward:.1f} len {max_length} steps {steps} mem {len(agent.memory)}\n"
         print(log_msg, end="")
         log_file.write(log_msg)
-
-        if not evaluation_mode and (episode + 1) % save_frequency == 0:
-            agent.save_model(episode + 1)
-            log_file.flush()
-
         board.reset()
+
+        if not evaluation_mode and (episode) % save_frequency == 0:
+            agent.save_model(episode)
+            log_file.flush()
+            stop, best_avg_length, poor_performance_count = evaluation(
+                episode, agent, board, 100, eval_file, best_avg_length, poor_performance_count
+            )
+            print()
+            if stop:
+                break
 
     if not evaluation_mode and running:
         agent.save_model(episodes)
     if display_graphics:
         pygame.quit()
+
+    log_file.close()
+    eval_file.close()
 
 if __name__ == "__main__":
     main()
