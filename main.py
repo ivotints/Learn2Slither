@@ -113,7 +113,7 @@ def main():
                 if step_by_step_mode:
                     wait_for_step = True
 
-        log_msg = f"{episode} rwrd {total_reward:.1f} len {max_length} steps {steps}\n"
+        log_msg = f"{episode} rwrd {total_reward:.1f} len {max_length} steps {steps} mem {len(agent.memory)}\n"
         print(log_msg, end="")
         log_file.write(log_msg)
 

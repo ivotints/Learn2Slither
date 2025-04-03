@@ -43,10 +43,15 @@ class SnakeAgent:
             return model
 
     def get_state(self):
-        return (get_state_16_normalized(self))
+        directions = np.array(self.board.DIRECTIONS, dtype=np.int8)
+        return get_state_16_normalized_numba(
+            self.board.head_y, self.board.head_x, self.board.table,
+            self.board.tail_y, self.board.tail_x, directions,
+            self.board.TAIL, self.board.APPLE, self.board.PEPPER
+        )
 
     def get_action(self, state):
-        return(get_action_half_safe(self, state))
+        return(get_action_safe(self, state))
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))

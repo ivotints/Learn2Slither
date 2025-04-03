@@ -1,8 +1,8 @@
 # here i will have a lot of get_state functions to find out the best
 import numpy as np
+import numba as nb
 
-
-def get_state_16bits(self): # 4th will be normalized distance to nearet obstacle - if next move is death - 0, otherwise 0.33 or 0.67 and so on till 1
+def get_state_16bits(self):
     state = np.zeros(self.INPUT_SIZE, dtype=np.float32)
 
     head_y = self.board.head_y
@@ -53,22 +53,17 @@ def get_state_16bits(self): # 4th will be normalized distance to nearet obstacle
 
     return state
 
-def get_state_16_normalized(self):
-    state = np.zeros(self.INPUT_SIZE, dtype=np.float32)
+@nb.njit
+def get_state_16_normalized_numba(head_y, head_x, table, tail_y, tail_x, directions, TAIL, APPLE, PEPPER, SIZE=10):
+    state = np.zeros(16, dtype=np.float32)
+    SIZE_INV = 0.111111111
 
-    head_y = self.board.head_y
-    head_x = self.board.head_x
-    table = self.board.table
-    tail_y = self.board.tail_y
-    tail_x = self.board.tail_x
-    SIZE = 10
-    SIZE_INV = 0.111111111  #  1/(SIZE-1) = 1/9
-
-    for i, (dy, dx) in enumerate(self.board.DIRECTIONS):
+    for i in range(4):
+        dy, dx = directions[i]
         y = head_y
         x = head_x
         dist = 0
-        base_idx = i << 2
+        base_idx = i * 4
 
         while True:
             y += dy
@@ -78,13 +73,13 @@ def get_state_16_normalized(self):
                 break
 
             cell = table[y][x]
-            if cell == self.board.TAIL and (y != tail_y or x != tail_x):
+            if cell == TAIL and (y != tail_y or x != tail_x):
                 state[base_idx] = 1
                 break
-            if cell == self.board.APPLE:
+            if cell == APPLE:
                 state[base_idx + 1] = 1
                 break
-            if cell == self.board.PEPPER:
+            if cell == PEPPER:
                 state[base_idx + 2] = 1
                 break
             dist += 1
