@@ -9,6 +9,9 @@ with open(os.devnull, 'w') as f, contextlib.redirect_stdout(f):
 from board import init_board
 from graphics import init_graphics
 from agent import SnakeAgent
+from display_training_history import display_training_history
+from datetime import datetime
+
 
 def setup_argparser():
     """Set up and return the argument parser for command-line arguments."""
@@ -21,8 +24,8 @@ def setup_argparser():
     parser.add_argument('--second_layer', '-sl', type=int, default=16, help='Number of neurons in the second layer')
     parser.add_argument('--episodes', '-ep', type=int, default=10000, help='Number of training episodes')
     parser.add_argument('--show_vision', '-sv', action='store_true', help='Show agent vision in terminal')
-
     return parser
+
 
 def evaluate_model(agent, board, evaluation_episodes):
     agent.evaluation_mode = True
@@ -317,6 +320,9 @@ def main():
     finally:
         if graphics:
             pygame.quit()
+
+        if not args.evaluation_mode:
+            display_training_history(agent, show_plot=(not args.no_graphics))
 
 if __name__ == "__main__":
     main()
