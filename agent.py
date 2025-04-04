@@ -35,8 +35,8 @@ class SnakeAgent:
 
     def _create_model(self):
             model = keras.Sequential([
-                keras.layers.Dense(32, input_shape=(self.INPUT_SIZE,), activation='relu'),
-                keras.layers.Dense(16, activation='relu'),
+                keras.layers.Dense(64, input_shape=(self.INPUT_SIZE,), activation='relu'),
+                keras.layers.Dense(32, activation='relu'),
                 keras.layers.Dense(self.OUTPUT_SIZE, activation='linear')
             ])
             model.compile(optimizer='adam', loss='mse', jit_compile=True)

@@ -89,7 +89,7 @@ def run_training(agent, board, graphics, args):
     log_file = open(os.path.join("models", agent.folder_name, 'logs.txt'), 'a')
     eval_file = open(os.path.join("models", agent.folder_name, 'evaluation.txt'), 'a')
 
-    fps = 18
+    fps = 24
     step_by_step_mode = False
     wait_for_step = False
     episodes = 10000
@@ -169,7 +169,7 @@ def run_training(agent, board, graphics, args):
         eval_file.close()
 
 def run_evaluation(agent, board, graphics):
-    fps = 18
+    fps = 24
     step_by_step_mode = False
     wait_for_step = False
     episodes = 10000
@@ -256,6 +256,10 @@ def handle_ui_events(graphics, step_by_step_mode, wait_for_step, fps):
                     step_by_step_mode = True
                     wait_for_step = True
                     print("Step-by-step mode enabled. Press SPACE to advance.")
+                elif key_num == 9:
+                    step_by_step_mode = False
+                    fps = 0  # 0 means unlimited FPS (no delay)
+                    print("Unlimited speed mode enabled")
                 else:
                     step_by_step_mode = False
                     fps = 2 + (key_num - 1) * 3
