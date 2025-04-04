@@ -182,6 +182,7 @@ def run_training(agent, board, graphics, args):
     finally:
         log_file.close()
         eval_file.close()
+        agent.save_model(episode)
 
 def run_evaluation(agent, board, graphics, args):
     fps = 24
@@ -194,6 +195,7 @@ def run_evaluation(agent, board, graphics, args):
     evaluation_lengths = []
 
     def signal_handler(sig, frame):
+        agent.save_model(episode)
         print_evaluation_summary(evaluation_lengths)
         sys.exit(0)
 
