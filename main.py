@@ -17,6 +17,9 @@ def setup_argparser():
     parser.add_argument('--evaluation_mode', '-e', action='store_true', help='Run in evaluation mode (no training)')
     parser.add_argument('--load_model', '-lm', type=str, help='Path to model to load')
     parser.add_argument('--name', '-n', type=str, default='model', help='Name of model folder')
+    parser.add_argument('--first_layer', '-fl', type=int, default=32, help='Number of neurons in the first layer')
+    parser.add_argument('--second_layer', '-sl', type=int, default=16, help='Number of neurons in the second layer')
+    parser.add_argument('--episodes', '-ep', type=int, default=10000, help='Number of training episodes')
     return parser
 
 def evaluate_model(agent, board, evaluation_episodes):
@@ -92,7 +95,7 @@ def run_training(agent, board, graphics, args):
     fps = 24
     step_by_step_mode = False
     wait_for_step = False
-    episodes = 10000
+    episodes = args.episodes
     save_frequency = 50
     running = True
 
@@ -168,11 +171,12 @@ def run_training(agent, board, graphics, args):
         log_file.close()
         eval_file.close()
 
-def run_evaluation(agent, board, graphics):
+def run_evaluation(agent, board, graphics, args):
     fps = 24
     step_by_step_mode = False
     wait_for_step = False
-    episodes = 10000
+    episodes = episodes = args.episodes
+
     running = True
 
     evaluation_lengths = []
@@ -282,7 +286,7 @@ def main():
     args = setup_argparser().parse_args()
 
     board = init_board()
-    agent = SnakeAgent(board)
+    agent = SnakeAgent(board, first_layer=args.first_layer, second_layer=args.second_layer)
     agent.evaluation_mode = args.evaluation_mode
 
     if args.load_model:
@@ -292,7 +296,7 @@ def main():
 
     try:
         if args.evaluation_mode:
-            run_evaluation(agent, board, graphics)
+            run_evaluation(agent, board, graphics, args)
         else:
             run_training(agent, board, graphics, args)
 

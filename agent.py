@@ -11,8 +11,10 @@ class SnakeAgent:
     INPUT_SIZE = 16
     OUTPUT_SIZE = 4
     BATCH_SIZE = 128
-    def __init__(self, board):
+    def __init__(self, board, first_layer=32, second_layer=16):
         self.board = board
+        self.first_layer = first_layer
+        self.second_layer = second_layer
         self.model = self._create_model()
         self.epsilon = 1.0
         self.epsilon_min = 0.01
@@ -35,8 +37,8 @@ class SnakeAgent:
 
     def _create_model(self):
             model = keras.Sequential([
-                keras.layers.Dense(64, input_shape=(self.INPUT_SIZE,), activation='relu'),
-                keras.layers.Dense(32, activation='relu'),
+                keras.layers.Dense(self.first_layer, input_shape=(self.INPUT_SIZE,), activation='relu'),
+                keras.layers.Dense(self.second_layer, activation='relu'),
                 keras.layers.Dense(self.OUTPUT_SIZE, activation='linear')
             ])
             model.compile(optimizer='adam', loss='mse', jit_compile=True)
