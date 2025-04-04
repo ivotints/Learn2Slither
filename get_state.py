@@ -73,7 +73,7 @@ def get_state_16_normalized_numba(head_y, head_x, table, tail_y, tail_x, directi
                 break
 
             cell = table[y][x]
-            if cell == TAIL and (y != tail_y or x != tail_x):
+            if cell == TAIL: # and (y != tail_y or x != tail_x):
                 state[base_idx] = 1
                 break
             if cell == APPLE:

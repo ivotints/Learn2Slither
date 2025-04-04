@@ -20,6 +20,8 @@ def setup_argparser():
     parser.add_argument('--first_layer', '-fl', type=int, default=32, help='Number of neurons in the first layer')
     parser.add_argument('--second_layer', '-sl', type=int, default=16, help='Number of neurons in the second layer')
     parser.add_argument('--episodes', '-ep', type=int, default=10000, help='Number of training episodes')
+    parser.add_argument('--show_vision', '-sv', action='store_true', help='Show agent vision in terminal')
+
     return parser
 
 def evaluate_model(agent, board, evaluation_episodes):
@@ -96,6 +98,7 @@ def run_training(agent, board, graphics, args):
     step_by_step_mode = False
     wait_for_step = False
     episodes = args.episodes
+    show_visison = args.show_vision
     save_frequency = 50
     running = True
 
@@ -108,6 +111,7 @@ def run_training(agent, board, graphics, args):
                 break
 
             state = agent.get_state()
+
             total_reward = 0
             done = False
             max_length = 3
@@ -116,6 +120,14 @@ def run_training(agent, board, graphics, args):
             max_steps = 100
 
             while running and not done and steps_no_food < max_steps:
+                if show_visison:
+                    print("Obstacle|Apple|Pepper|Distance to obstacle")
+                    print(f"{state[0]:.0f} {state[1]:.0f} {state[2]:.0f} {state[3]:.03f} - left")
+                    print(f"{state[4]:.0f} {state[5]:.0f} {state[6]:.0f} {state[7]:.03f} - up")
+                    print(f"{state[8]:.0f} {state[9]:.0f} {state[10]:.0f} {state[11]:.03f} - right")
+                    print(f"{state[12]:.0f} {state[13]:.0f} {state[14]:.0f} {state[15]:.03f} - down")
+                    print()
+
                 if graphics:
                     running, step_by_step_mode, wait_for_step, fps = handle_ui_events(
                         graphics, step_by_step_mode, wait_for_step, fps
