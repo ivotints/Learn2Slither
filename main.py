@@ -10,7 +10,11 @@ from board import init_board
 from graphics import init_graphics
 from agent import SnakeAgent
 from display_training_history import display_training_history
-from datetime import datetime
+
+try:
+    from lobby import run_lobby
+except ImportError:
+    run_lobby = None
 
 
 def setup_argparser():
@@ -24,6 +28,7 @@ def setup_argparser():
     parser.add_argument('--second_layer', '-sl', type=int, default=16, help='Number of neurons in the second layer')
     parser.add_argument('--episodes', '-ep', type=int, default=10000, help='Number of training episodes')
     parser.add_argument('--show_vision', '-sv', action='store_true', help='Show agent vision in terminal')
+    parser.add_argument('--use_lobby', '-ul', action='store_true', help='Show configuration lobby')
     return parser
 
 
@@ -90,7 +95,6 @@ def print_evaluation_summary(evaluation_lengths):
     print(f"Total games played: {len(evaluation_lengths)}")
     print(f"Average snake length: {avg_length:.2f}")
     print(f"Maximum length achieved: {max(evaluation_lengths)}")
-    print(f"Minimum length achieved: {min(evaluation_lengths) if evaluation_lengths else 0}")
 
 def run_training(agent, board, graphics, args):
     agent.set_folder_name(args.name)
@@ -301,6 +305,14 @@ def calculate_reward(board, old_length, done):
 
 def main():
     args = setup_argparser().parse_args()
+
+    if run_lobby is not None and (args.use_lobby or len(sys.argv) == 1):
+        lobby_args, eval_mode = run_lobby()
+        if lobby_args is None:
+            return
+
+        args = setup_argparser().parse_args(lobby_args)
+        args.evaluation_mode = eval_mode
 
     board = init_board()
     agent = SnakeAgent(board, first_layer=args.first_layer, second_layer=args.second_layer)

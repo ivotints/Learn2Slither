@@ -6,7 +6,6 @@ import os
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import make_pipeline
-
 def display_training_history(agent, show_plot=True):
     try:
         data = []
@@ -27,6 +26,10 @@ def display_training_history(agent, show_plot=True):
             print("No training data found to display.")
             return
 
+        if len(data) < 5:
+            print("Not enough training data for visualization (minimum 5 episodes required).")
+            return
+
         df = pd.DataFrame(data, columns=['epoch', 'length'])
 
         fig = plt.figure(figsize=(10, 6))
@@ -42,7 +45,7 @@ def display_training_history(agent, show_plot=True):
             plt.plot(df['epoch'], p(df['epoch']), "r--", alpha=0.8, label='Linear Trend')
 
             X = df['epoch'].values.reshape(-1, 1)
-            poly_degree = 3 
+            poly_degree = 3
             polyreg = make_pipeline(PolynomialFeatures(poly_degree), LinearRegression())
             polyreg.fit(X, df['length'])
             plt.plot(df['epoch'], polyreg.predict(X), 'g-', alpha=0.8, label=f'Non-Linear Trend (degree={poly_degree})')
