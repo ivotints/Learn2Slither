@@ -36,13 +36,15 @@ class SnakeAgent:
         self.max_batch_size = max_batch_size
 
     def _create_model(self):
-            model = keras.Sequential([
-                keras.layers.Dense(self.first_layer, input_shape=(self.INPUT_SIZE,), activation='relu'),
-                keras.layers.Dense(self.second_layer, activation='relu'),
-                keras.layers.Dense(self.OUTPUT_SIZE, activation='linear')
-            ])
-            model.compile(optimizer='adam', loss='mse', jit_compile=True)
-            return model
+        layers = []
+        first_layer_size = max(1, self.first_layer)
+        layers.append(keras.layers.Dense(first_layer_size, input_shape=(self.INPUT_SIZE,), activation='relu'))
+        if self.second_layer > 0:
+            layers.append(keras.layers.Dense(self.second_layer, activation='relu'))
+        layers.append(keras.layers.Dense(self.OUTPUT_SIZE, activation='linear'))
+        model = keras.Sequential(layers)
+        model.compile(optimizer='adam', loss='mse', jit_compile=True)
+        return model
 
     def get_state(self):
         directions = np.array(self.board.DIRECTIONS, dtype=np.int8)

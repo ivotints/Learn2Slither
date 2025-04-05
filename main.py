@@ -104,7 +104,7 @@ def run_training(agent, board, graphics, args):
     fps = 24
     step_by_step_mode = False
     wait_for_step = False
-    episodes = args.episodes
+    episodes = max(2, args.episodes)
     show_visison = args.show_vision
     save_frequency = 50
     running = True
@@ -113,6 +113,7 @@ def run_training(agent, board, graphics, args):
     poor_performance_count = 0
 
     try:
+        episode = 0
         for episode in range(1, episodes):
             if not running:
                 break
@@ -189,7 +190,8 @@ def run_training(agent, board, graphics, args):
     finally:
         log_file.close()
         eval_file.close()
-        agent.save_model(episode)
+        if episode > 0:
+            agent.save_model(episode)
 
 def run_evaluation(agent, board, graphics, args):
     fps = 24

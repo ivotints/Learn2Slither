@@ -20,3 +20,4 @@ Study overall should never stop - new snake with adjusted parameters should star
 
 And do not change original settings.txt in root folder. every time when i start training it shoul load original settings and copy them to its folder, but when model stops because of no progress, it starts new process with flag, which tells him that he is a child and he need to load the settings from parent and adjust them. Then when this children stops, he create one more children which will compere the performance his parent and his grand parens ant take the best one's settings and adjust them and so on
 
+vision and print state works bad
