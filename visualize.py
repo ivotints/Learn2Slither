@@ -6,16 +6,29 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
 
-parser = argparse.ArgumentParser(description='Visualize training metrics from logs.txt')
-parser.add_argument('--model', type=str, required=True, help='Name of the model folder')
-parser.add_argument('--degree', type=int, default=3, help='Degree of polynomial for non-linear regression')
+parser = argparse.ArgumentParser(
+    description='Visualize training metrics from logs.txt'
+)
+parser.add_argument(
+    '--model',
+    type=str,
+    required=True,
+    help='Name of the model folder'
+)
+parser.add_argument(
+    '--degree',
+    type=int,
+    default=3,
+    help='Degree of polynomial for non-linear regression'
+)
 args = parser.parse_args()
 
 NAME = args.model
 POLY_DEGREE = args.degree
 
 data = []
-with open(f'models/{NAME}/logs.txt', 'r') as file:
+log_path = f'models/{NAME}/logs.txt'
+with open(log_path, 'r') as file:
     for line in file:
         parts = line.strip().split()
         epoch = int(parts[0])
@@ -35,12 +48,27 @@ ax1.grid(True, alpha=0.3)
 
 z1 = np.polyfit(df['epoch'], df['length'], 1)
 p1 = np.poly1d(z1)
-ax1.plot(df['epoch'], p1(df['epoch']), "r--", alpha=0.8, label='Linear Trend')
+ax1.plot(
+    df['epoch'],
+    p1(df['epoch']),
+    "r--",
+    alpha=0.8,
+    label='Linear Trend'
+)
 
 X = df['epoch'].values.reshape(-1, 1)
-polyreg1 = make_pipeline(PolynomialFeatures(POLY_DEGREE), LinearRegression())
+polyreg1 = make_pipeline(
+    PolynomialFeatures(POLY_DEGREE),
+    LinearRegression()
+)
 polyreg1.fit(X, df['length'])
-ax1.plot(df['epoch'], polyreg1.predict(X), 'g-', alpha=0.8, label=f'Polynomial (degree={POLY_DEGREE})')
+ax1.plot(
+    df['epoch'],
+    polyreg1.predict(X),
+    'g-',
+    alpha=0.8,
+    label=f'Polynomial (degree={POLY_DEGREE})'
+)
 ax1.legend()
 
 ax2.plot(df['epoch'], df['reward'], color='green', alpha=0.5, label='Actual')
@@ -51,11 +79,26 @@ ax2.grid(True, alpha=0.3)
 
 z2 = np.polyfit(df['epoch'], df['reward'], 1)
 p2 = np.poly1d(z2)
-ax2.plot(df['epoch'], p2(df['epoch']), "r--", alpha=0.8, label='Linear Trend')
+ax2.plot(
+    df['epoch'],
+    p2(df['epoch']),
+    "r--",
+    alpha=0.8,
+    label='Linear Trend'
+)
 
-polyreg2 = make_pipeline(PolynomialFeatures(POLY_DEGREE), LinearRegression())
+polyreg2 = make_pipeline(
+    PolynomialFeatures(POLY_DEGREE),
+    LinearRegression()
+)
 polyreg2.fit(X, df['reward'])
-ax2.plot(df['epoch'], polyreg2.predict(X), 'b-', alpha=0.8, label=f'Polynomial (degree={POLY_DEGREE})')
+ax2.plot(
+    df['epoch'],
+    polyreg2.predict(X),
+    'b-',
+    alpha=0.8,
+    label=f'Polynomial (degree={POLY_DEGREE})'
+)
 ax2.legend()
 
 plt.tight_layout()

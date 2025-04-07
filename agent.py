@@ -1,16 +1,17 @@
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from tensorflow import keras
 from collections import deque
 import numpy as np
 from datetime import datetime
-from get_state import *
-from get_action import *
+from get_state import get_state_16_normalized_numba
+from get_action import get_action_safe
+
 
 class SnakeAgent:
     INPUT_SIZE = 16
     OUTPUT_SIZE = 4
     BATCH_SIZE = 128
+
     def __init__(self, board, first_layer=32, second_layer=16):
         self.board = board
         self.first_layer = first_layer
@@ -19,7 +20,7 @@ class SnakeAgent:
         self.epsilon = 1.0
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.9998
-        self.memory = deque(maxlen = 10000)
+        self.memory = deque(maxlen=10000)
         self.target_model = self._create_model()
         self.update_target_counter = 0
         self.evaluation_mode = False
@@ -27,21 +28,28 @@ class SnakeAgent:
         self._init_replay_buffers(self.BATCH_SIZE)
 
     def _init_replay_buffers(self, max_batch_size):
-        """Pre-allocate memory arrays for replay buffer to improve performance"""
-        self.replay_states = np.zeros((max_batch_size, self.INPUT_SIZE), dtype=np.float32)
+        self.replay_states = np.zeros(
+            (max_batch_size, self.INPUT_SIZE), dtype=np.float32
+        )
         self.replay_actions = np.zeros(max_batch_size, dtype=np.int32)
         self.replay_rewards = np.zeros(max_batch_size, dtype=np.float32)
-        self.replay_next_states = np.zeros((max_batch_size, self.INPUT_SIZE), dtype=np.float32)
+        self.replay_next_states = np.zeros(
+            (max_batch_size, self.INPUT_SIZE), dtype=np.float32
+        )
         self.replay_dones = np.zeros(max_batch_size, dtype=np.bool_)
         self.max_batch_size = max_batch_size
 
     def _create_model(self):
         layers = []
         first_layer_size = max(1, self.first_layer)
-        layers.append(keras.layers.Dense(first_layer_size, input_shape=(self.INPUT_SIZE,), activation='relu'))
+        layers.append(keras.layers.Dense(
+            first_layer_size, input_shape=(self.INPUT_SIZE,), activation='relu'
+        ))
         if self.second_layer > 0:
-            layers.append(keras.layers.Dense(self.second_layer, activation='relu'))
-        layers.append(keras.layers.Dense(self.OUTPUT_SIZE, activation='linear'))
+            layers.append(keras.layers.Dense(self.second_layer,
+                                             activation='relu'))
+        layers.append(keras.layers.Dense(self.OUTPUT_SIZE,
+                                         activation='linear'))
         model = keras.Sequential(layers)
         model.compile(optimizer='adam', loss='mse', jit_compile=True)
         return model
@@ -51,12 +59,14 @@ class SnakeAgent:
         return get_state_16_normalized_numba(
             self.board.head_y, self.board.head_x, self.board.table,
             self.board.tail_y, self.board.tail_x, directions,
-            self.board.TAIL, self.board.APPLE, self.board.PEPPER,  self.board.size_y, self.board.size_x
+            self.board.TAIL, self.board.APPLE, self.board.PEPPER,
+            self.board.size_y, self.board.size_x
         )
 
     def get_action(self, state):
-        return(get_action_safe(self, state))
-        return(get_action_dangerous(self, state))
+        return get_action_safe(self, state)
+        # Dangerous action getter is commented out as it's undefined
+        # return get_action_dangerous(self, state)
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
@@ -65,7 +75,8 @@ class SnakeAgent:
         base_path = os.path.join("models", name)
         if os.path.exists(base_path) and os.path.isdir(base_path):
             i = 2
-            while os.path.exists(f"{base_path}{i}") and os.path.isdir(f"{base_path}{i}"):
+            while (os.path.exists(f"{base_path}{i}") and
+                   os.path.isdir(f"{base_path}{i}")):
                 i += 1
             self.folder_name = f"{name}{i}"
         else:
@@ -75,7 +86,10 @@ class SnakeAgent:
 
     def save_model(self, episode):
         timestamp = datetime.now().strftime("%Y%m%d_%H:%M")
-        model_path = os.path.join("models", self.folder_name, f"snake_model_{episode}_{timestamp}.keras")
+        model_path = os.path.join(
+            "models", self.folder_name,
+            f"snake_model_{episode}_{timestamp}.keras"
+        )
         self.model.save(model_path)
         print(f"Model saved to {model_path}")
 
@@ -84,8 +98,8 @@ class SnakeAgent:
             try:
                 self.model = keras.models.load_model(model_path)
                 self.target_model = keras.models.load_model(model_path)
-                self.epsilon = 0.1 # self.epsilon_min
-            except Exception as e:
+                self.epsilon = 0.1  # self.epsilon_min
+            except Exception:
                 import sys
                 print("\033[91mFailed to load model\033[0m")
                 sys.exit(1)
@@ -122,12 +136,17 @@ class SnakeAgent:
         next_q_values = self.target_model(next_states, training=False).numpy()
 
         max_next_q = np.max(next_q_values, axis=1)
-        targets = np.where(dones, rewards, rewards + 0.95 * max_next_q)
+        targets = np.where(
+            dones, rewards, rewards + 0.95 * max_next_q
+        )
 
         for i in range(batch_size):
             current_q_values[i, actions[i]] = targets[i]
 
-        self.model.fit(states, current_q_values, epochs=1, verbose=0, batch_size=batch_size)
+        self.model.fit(
+            states, current_q_values, epochs=1, verbose=0,
+            batch_size=batch_size
+        )
 
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
@@ -135,5 +154,5 @@ class SnakeAgent:
         new_weights = []
         target_weights = self.target_model.get_weights()
         for i, model_weights in enumerate(self.model.get_weights()):
-            new_weights.append(0.01 * model_weights + 0.99 * target_weights[i])  # adjastable
+            new_weights.append(0.01 * model_weights + 0.99 * target_weights[i])
         self.target_model.set_weights(new_weights)
