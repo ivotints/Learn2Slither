@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-import numpy as np
 
 def analyze_model(model_path):
     try:

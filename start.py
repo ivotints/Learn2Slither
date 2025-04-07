@@ -19,7 +19,6 @@ def main():
         return process.returncode
 
     except subprocess.CalledProcessError as e:
-        print(f"Error running main.py: {e}", file=sys.stderr)
         return e.returncode
     except FileNotFoundError:
         print("Error: main.py not found in the current directory", file=sys.stderr)
