@@ -21,5 +21,3 @@ And do not change original settings.txt in root folder. every time when i start 
 i need the script which will scan in folder models/*/evaluation.txt for the  best result and return me a top of thenm with name of models
 
 vision and print state works bad
-
-no ststistics if not wanted
