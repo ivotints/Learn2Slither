@@ -72,15 +72,24 @@ class TextInput:
         elif self.numeric:
             if event.unicode.isdigit():
                 self.value += event.unicode
+                # Apply constraints for map dimensions
+                if "width" in self.label.lower():
+                    self.apply_constraints(3, 24)
+                elif "height" in self.label.lower():
+                    self.apply_constraints(3, 13)
         else:
             if event.unicode.isalnum() or event.unicode in "-_":
                 self.value += event.unicode
 
-        if self.numeric and self.value:
+    def apply_constraints(self, min_val=None, max_val=None):
+        """Apply numeric constraints to the input value"""
+        if self.numeric and self.value and min_val is not None and max_val is not None:
             try:
-                int_value = int(self.value)
+                val = int(self.value)
+                val = max(min_val, min(max_val, val))
+                self.value = str(val)
             except ValueError:
-                self.value = "0"
+                self.value = str(min_val)
 
 class Toggle:
     def __init__(self, x, y, width, label, initial_state=False):
@@ -107,6 +116,14 @@ class Toggle:
         self.state = not self.state
         return self.state
 
+def validate_map_size(value, min_val, max_val):
+    """Validates that a map dimension is within acceptable range"""
+    try:
+        val = int(value)
+        return max(min_val, min(max_val, val))
+    except ValueError:
+        return min_val  # Default to minimum if invalid
+
 def run_lobby():
     pygame.init()
     screen = pygame.display.set_mode((900, 600))
@@ -127,8 +144,10 @@ def run_lobby():
     episodes_input = TextInput(330, 180, 200, 30, "Episodes:", "1000", numeric=True)
     first_layer_input = TextInput(330, 230, 200, 30, "First Layer Neurons:", "32", numeric=True)
     second_layer_input = TextInput(330, 280, 200, 30, "Second Layer Neurons:", "16", numeric=True)
+    map_width_input = TextInput(330, 430, 200, 30, "Map Width (3-24):", "10", numeric=True)
+    map_height_input = TextInput(330, 480, 200, 30, "Map Height (3-13):", "10", numeric=True)
 
-    text_inputs = [model_input, episodes_input, first_layer_input, second_layer_input]
+    text_inputs = [model_input, episodes_input, first_layer_input, second_layer_input, map_width_input, map_height_input]
     active_input = None
 
     graphics_toggle = Toggle(330, 330, 50, "Enable Graphics", True)
@@ -180,6 +199,8 @@ def run_lobby():
                     episodes = episodes_input.value if episodes_input.value else "1000"
                     first_layer = first_layer_input.value if first_layer_input.value else "32"
                     second_layer = second_layer_input.value if second_layer_input.value else "16"
+                    map_width = validate_map_size(map_width_input.value if map_width_input.value else "10", 3, 24)
+                    map_height = validate_map_size(map_height_input.value if map_height_input.value else "10", 3, 13)
 
                     cmd_args = []
                     if not graphics_toggle.state:
@@ -190,7 +211,9 @@ def run_lobby():
                         f"--episodes={episodes}",
                         f"--first_layer={first_layer}",
                         f"--second_layer={second_layer}",
-                        f"--name={model_name}"
+                        f"--name={model_name}",
+                        f"--map_width={map_width}",
+                        f"--map_height={map_height}"
                     ])
 
                     pygame.quit()
@@ -222,7 +245,7 @@ def run_lobby():
         subtitle_surf = subtitle_font.render("Configuration Panel", True, accent_color)
         screen.blit(subtitle_surf, (screen.get_width()//2 - subtitle_surf.get_width()//2, 70))
 
-        panel_rect = pygame.Rect(150, 110, 600, 370)
+        panel_rect = pygame.Rect(150, 110, 600, 430)
         pygame.draw.rect(screen, panel_color, panel_rect, border_radius=15)
         pygame.draw.rect(screen, accent_color, panel_rect, 2, border_radius=15)
 

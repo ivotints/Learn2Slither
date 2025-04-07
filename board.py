@@ -1,20 +1,6 @@
 import numpy as np
 import random
 
-#    0 1 2 3 4 5 6 7 8 9
-#    _ _ _ _ _ _ _ _ _ _
-# 0 |. . . . . H S S . .|
-# 1 |. . . . . . . . . .|
-# 2 |. . . . . . . . . .|
-# 3 |. . . A . . . . . .|
-# 4 |. . . . . . . . . .|
-# 5 |. . . . . . . . . .|
-# 6 |. . . . . . A . . .|
-# 7 |. . . . . . . . . .|
-# 8 |. . . P . . . . . .|
-# 9 |. . . . . . . . . .|
-#    ‾ ‾ ‾ ‾ ‾ ‾ ‾ ‾ ‾ ‾
-
 class init_board:
     EMPTY = 0
     TAIL = 1
@@ -23,9 +9,9 @@ class init_board:
     PEPPER = 4
     DIRECTIONS = [(0, -1), (-1, 0), (0, 1), (1, 0)]  #LEFT, UP, RIGHT, DOWN
 
-    def __init__(self):
-        self.size_y = 10
-        self.size_x = 10
+    def __init__(self, map_height, map_width):
+        self.size_y = map_height
+        self.size_x = map_width
         self.table = np.full((self.size_y, self.size_x),self.EMPTY, dtype='int8')
         self.head_y = 0
         self.head_x = 0
@@ -151,11 +137,10 @@ class init_board:
     def make_move(self, action):
         dy = self.DIRECTIONS[action][0]
         dx = self.DIRECTIONS[action][1]
-        SIZE = 10
 
         new_y = dy + self.head_y
         new_x = dx + self.head_x
-        if not (0 <= new_y < SIZE and 0 <= new_x < SIZE):
+        if not (0 <= new_y < self.size_y and 0 <= new_x < self.size_x):
             # print("Death from wall")
             return True
 

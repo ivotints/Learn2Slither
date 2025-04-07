@@ -7,3 +7,4 @@ scikit-learn
 Xlib
 numba
 tabulate
+flake8

@@ -2,8 +2,6 @@ import numpy as np
 import random
 
 def get_action_dangerous(self, state):
-    """AI will choose his action"""
-    # make it so random moves do not kill the snake, random moves allowed only in safe drections
     if np.random.rand() <= self.epsilon and not self.evaluation_mode:
         action = random.randint(0, self.OUTPUT_SIZE - 1)
         self.board.last_move_random = True
@@ -16,12 +14,13 @@ def get_action_dangerous(self, state):
     return action
 
 def get_action_safe(self, state):
+    """AI will choose an action that avoids immediate death when exploring"""
     if np.random.rand() <= self.epsilon and not self.evaluation_mode:
         safe_directions = []
         for i, (dy, dx) in enumerate(self.board.DIRECTIONS):
             new_y = self.board.head_y + dy
             new_x = self.board.head_x + dx
-            if 0 <= new_y < 10 and 0 <= new_x < 10:
+            if 0 <= new_y < self.board.size_y and 0 <= new_x < self.board.size_x:
                 cell = self.board.table[new_y][new_x]
                 if (cell != self.board.TAIL or
                     (new_y == self.board.tail_y and new_x == self.board.tail_x)):
@@ -41,12 +40,12 @@ def get_action_safe(self, state):
 
 def get_action_half_safe(self, state):
     if np.random.rand() <= self.epsilon and not self.evaluation_mode:
-        if np.random.rand() <= 0.9: # 90% chanse of safe random move
+        if np.random.rand() <= 0.9:
             safe_directions = []
             for i, (dy, dx) in enumerate(self.board.DIRECTIONS):
                 new_y = self.board.head_y + dy
                 new_x = self.board.head_x + dx
-                if 0 <= new_y < 10 and 0 <= new_x < 10:
+                if 0 <= new_y < self.board.size_y and 0 <= new_x < self.board.size_x:
                     cell = self.board.table[new_y][new_x]
                     if (cell != self.board.TAIL or
                         (new_y == self.board.tail_y and new_x == self.board.tail_x)):

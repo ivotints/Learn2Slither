@@ -51,7 +51,7 @@ class SnakeAgent:
         return get_state_16_normalized_numba(
             self.board.head_y, self.board.head_x, self.board.table,
             self.board.tail_y, self.board.tail_x, directions,
-            self.board.TAIL, self.board.APPLE, self.board.PEPPER
+            self.board.TAIL, self.board.APPLE, self.board.PEPPER,  self.board.size_y, self.board.size_x
         )
 
     def get_action(self, state):

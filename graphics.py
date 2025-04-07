@@ -8,11 +8,13 @@ class init_graphics:
     def __init__(self, board):
         self.board = board
         pygame.init()
-        self.window = pygame.display.set_mode((800, 800))
-        pygame.display.set_caption("Learn2Slither")
+        self.cell_size = 80
+        window_width = self.cell_size * self.board.size_x
+        window_height = self.cell_size * self.board.size_y
+        self.window = pygame.display.set_mode((window_width, window_height))
+        pygame.display.set_caption(f"Learn2Slither - {self.board.size_x}x{self.board.size_y}")
         self.clock = pygame.time.Clock()
         self.saved_board = None
-        self.cell_size = self.window.get_width() // self.board.size_x  # 80
         self.green_bokeh = None
         self.red_bokeh = None
         self.show_vision = False

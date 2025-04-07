@@ -54,9 +54,11 @@ def get_state_16bits(self):
     return state
 
 @nb.njit
-def get_state_16_normalized_numba(head_y, head_x, table, tail_y, tail_x, directions, TAIL, APPLE, PEPPER, SIZE=10):
+def get_state_16_normalized_numba(head_y, head_x, table, tail_y, tail_x, directions, TAIL, APPLE, PEPPER, SIZE_Y, SIZE_X):
     state = np.zeros(16, dtype=np.float32)
-    SIZE_INV = 0.111111111
+
+    MAX_DISTANCE = max(SIZE_Y, SIZE_X)
+    SIZE_INV = 1.0 / MAX_DISTANCE
 
     for i in range(4):
         dy, dx = directions[i]
@@ -68,7 +70,7 @@ def get_state_16_normalized_numba(head_y, head_x, table, tail_y, tail_x, directi
         while True:
             y += dy
             x += dx
-            if not (0 <= y < SIZE and 0 <= x < SIZE):
+            if not (0 <= y < SIZE_Y and 0 <= x < SIZE_X):
                 state[base_idx] = 1
                 break
 

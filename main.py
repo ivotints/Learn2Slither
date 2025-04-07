@@ -19,16 +19,32 @@ except ImportError:
 
 def setup_argparser():
     """Set up and return the argument parser for command-line arguments."""
-    parser = argparse.ArgumentParser(description="Snake game with Reinforcement Learning")
-    parser.add_argument('--no_graphics', '-ng', action='store_true', help='Turn off graphics')
-    parser.add_argument('--evaluation_mode', '-e', action='store_true', help='Run in evaluation mode (no training)')
-    parser.add_argument('--load_model', '-lm', type=str, help='Path to model to load')
-    parser.add_argument('--name', '-n', type=str, default='model', help='Name of model folder')
-    parser.add_argument('--first_layer', '-fl', type=int, default=32, help='Number of neurons in the first layer')
-    parser.add_argument('--second_layer', '-sl', type=int, default=16, help='Number of neurons in the second layer')
-    parser.add_argument('--episodes', '-ep', type=int, default=10000, help='Number of training episodes')
-    parser.add_argument('--show_vision', '-sv', action='store_true', help='Show agent vision in terminal')
-    parser.add_argument('--use_lobby', '-ul', action='store_true', help='Show configuration lobby')
+    parser = argparse.ArgumentParser(
+        description="Snake game with Reinforcement Learning")
+    parser.add_argument('--no_graphics', '-ng', action='store_true',
+                        help='Turn off graphics')
+    parser.add_argument('--evaluation_mode', '-e', action='store_true',
+                        help='Run in evaluation mode (no training)')
+    parser.add_argument('--load_model', '-lm', type=str,
+                        help='Path to model to load')
+    parser.add_argument('--name', '-n', type=str, default='model',
+                        help='Name of model folder')
+    parser.add_argument('--first_layer', '-fl', type=int, default=32,
+                        help='Number of neurons in the first layer')
+    parser.add_argument('--second_layer', '-sl', type=int, default=16,
+                        help='Number of neurons in the second layer')
+    parser.add_argument('--episodes', '-ep', type=int, default=10000,
+                        help='Number of training episodes')
+    parser.add_argument('--show_vision', '-sv', action='store_true',
+                        help='Show agent vision in terminal')
+    parser.add_argument('--use_lobby', '-ul', action='store_true',
+                        help='Show configuration lobby')
+    parser.add_argument('--map_width', '-mw', type=int, default=10,
+                        help='Width of the map (3-24)')
+    parser.add_argument('--map_height', '-mh', type=int, default=10,
+                        help='Height of the map (3-13)')
+    parser.add_argument('--show_history', '-sh', action='store_true',
+                        help='Show training history plot after training')
     return parser
 
 
@@ -60,6 +76,7 @@ def evaluate_model(agent, board, evaluation_episodes):
 
     agent.evaluation_mode = False
     return statistics.mean(lengths)
+
 
 def periodic_evaluation(episode, agent, board, eval_frequency, eval_file, best_avg_length, poor_performance_count):
     print(f"Evaluating model at episode {episode}...")
@@ -130,10 +147,10 @@ def run_training(agent, board, graphics, args):
             while running and not done and steps_no_food < max_steps:
                 if show_visison:
                     print("Obstacle|Apple|Pepper|Distance to obstacle")
-                    print(f"{state[0]:.0f} {state[1]:.0f} {state[2]:.0f} {state[3]:.03f} - left")
-                    print(f"{state[4]:.0f} {state[5]:.0f} {state[6]:.0f} {state[7]:.03f} - up")
-                    print(f"{state[8]:.0f} {state[9]:.0f} {state[10]:.0f} {state[11]:.03f} - right")
-                    print(f"{state[12]:.0f} {state[13]:.0f} {state[14]:.0f} {state[15]:.03f} - down")
+                    for i in range(4):
+                        direction_labels = ["left", "up", "right", "down"]
+                        base_idx = i * 4
+                        print(f"{state[base_idx]:.0f} {state[base_idx+1]:.0f} {state[base_idx+2]:.0f} {state[base_idx+3]:.03f} - {direction_labels[i]}")
                     print()
 
                 if graphics:
@@ -308,7 +325,15 @@ def calculate_reward(board, old_length, done):
 def main():
     args = setup_argparser().parse_args()
 
-    if run_lobby is not None and (args.use_lobby or len(sys.argv) == 1):
+    map_width = max(3, min(24, args.map_width))
+    map_height = max(3, min(13, args.map_height))
+
+    if map_width != args.map_width or map_height != args.map_height:
+        print(f"Warning: Map dimensions adjusted to valid range: {map_width}x{map_height}")
+        args.map_width = map_width
+        args.map_height = map_height
+
+    if run_lobby is not None and args.use_lobby:
         lobby_args, eval_mode = run_lobby()
         if lobby_args is None:
             return
@@ -316,7 +341,10 @@ def main():
         args = setup_argparser().parse_args(lobby_args)
         args.evaluation_mode = eval_mode
 
-    board = init_board()
+        args.map_width = max(3, min(24, args.map_width))
+        args.map_height = max(3, min(13, args.map_height))
+
+    board = init_board(args.map_height, args.map_width)
     agent = SnakeAgent(board, first_layer=args.first_layer, second_layer=args.second_layer)
     agent.evaluation_mode = args.evaluation_mode
 
@@ -335,8 +363,8 @@ def main():
         if graphics:
             pygame.quit()
 
-        if not args.evaluation_mode:
-            display_training_history(agent, show_plot=(not args.no_graphics))
+        if not args.evaluation_mode and args.show_history:
+            display_training_history(agent, show_plot=args.show_history)
 
 if __name__ == "__main__":
     main()
