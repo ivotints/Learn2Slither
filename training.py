@@ -75,7 +75,7 @@ def run_training(agent, board, graphics, args):
     fps = 24
     step_by_step_mode = False
     wait_for_step = False
-    episodes = max(2, args.episodes)
+    episodes = max(2, args.episodes + 1)
     show_vision = args.show_vision
     save_frequency = 50
     running = True

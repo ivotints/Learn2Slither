@@ -9,7 +9,7 @@ def run_evaluation(agent, board, graphics, args):
     fps = 24
     step_by_step_mode = False
     wait_for_step = False
-    episodes = args.episodes
+    episodes = args.episodes + 1
 
     running = True
     evaluation_lengths = []

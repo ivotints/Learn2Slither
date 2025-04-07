@@ -9,12 +9,10 @@ class Button:
         self.hover_color = (color[0]+20, color[1]+20, color[2]+20)
 
     def draw(self, surface, font):
-        # Draw the button with hover effect
         color = self.hover_color if self.is_hovered(pygame.mouse.get_pos()) else self.color
         pygame.draw.rect(surface, color, self.rect, border_radius=5)
         pygame.draw.rect(surface, (200, 200, 200), self.rect, 2, border_radius=5)
 
-        # Draw button text
         text_surf = font.render(self.text, True, (255, 255, 255))
         text_rect = text_surf.get_rect(center=self.rect.center)
         surface.blit(text_surf, text_rect)
@@ -34,16 +32,13 @@ class TextInput:
         self.numeric = numeric
 
     def draw(self, surface, font):
-        # Draw label
         label_surf = font.render(self.label, True, (220, 220, 220))
-        surface.blit(label_surf, (self.rect.x - 160, self.rect.y + 5))
+        surface.blit(label_surf, (self.rect.x - 180, self.rect.y + 5))
 
-        # Draw text box
         border_color = (180, 180, 180) if self.active else (100, 100, 100)
         pygame.draw.rect(surface, (40, 40, 50), self.rect, border_radius=5)
         pygame.draw.rect(surface, border_color, self.rect, 2, border_radius=5)
 
-        # Draw input value
         text_surf = font.render(self.value, True, (255, 255, 255))
         surface.blit(text_surf, (self.rect.x + 5, self.rect.y + 5))
 
@@ -58,7 +53,7 @@ class TextInput:
             self.value = self.value[:-1]
         elif self.numeric and event.unicode.isdigit():
             self.value += event.unicode
-        elif not self.numeric and (event.unicode.isalnum() or event.unicode in "-_"):
+        elif not self.numeric and (event.unicode.isalnum() or event.unicode in "-_/.:"):
             self.value += event.unicode
 
 class Toggle:
@@ -68,15 +63,12 @@ class Toggle:
         self.state = initial_state
 
     def draw(self, surface, font):
-        # Draw label
         label_surf = font.render(self.label, True, (220, 220, 220))
         surface.blit(label_surf, (self.rect.x - 160, self.rect.y))
 
-        # Draw toggle
         bg_color = (60, 180, 100) if self.state else (60, 60, 60)
         pygame.draw.rect(surface, bg_color, self.rect, border_radius=10)
 
-        # Draw toggle circle
         circle_x = self.rect.right - 10 if self.state else self.rect.left + 10
         pygame.draw.circle(surface, (240, 240, 240), (circle_x, self.rect.centery), 8)
 
@@ -98,12 +90,12 @@ def run_lobby():
     eval_button = Button(360, 400, 140, 40, "Evaluate", (50, 50, 120))
 
     inputs = [
-        TextInput(250, 100, 200, 30, "Model Name:", "model"),
-        TextInput(250, 140, 200, 30, "Episodes:", "10000", True),
-        TextInput(250, 180, 200, 30, "First Layer:", "32", True),
-        TextInput(250, 220, 200, 30, "Second Layer:", "16", True),
-        TextInput(250, 260, 200, 30, "Map Width (3-24):", "10", True),
-        TextInput(250, 300, 200, 30, "Map Height (3-13):", "10", True)
+        TextInput(270, 100, 200, 30, "Model Name:", "model"),
+        TextInput(270, 140, 200, 30, "Episodes:", "10000", True),
+        TextInput(270, 180, 200, 30, "First Layer:", "32", True),
+        TextInput(270, 220, 200, 30, "Second Layer:", "16", True),
+        TextInput(270, 260, 200, 30, "Map Width (3-24):", "10", True),
+        TextInput(270, 300, 200, 30, "Map Height (3-13):", "10", True)
     ]
     active_input = None
 
@@ -172,17 +164,20 @@ def run_lobby():
                     model_name = inputs[0].value or "model"
                     map_width = max(3, min(24, int(inputs[4].value or 10)))
                     map_height = max(3, min(13, int(inputs[5].value or 10)))
+                    episodes = inputs[1].value or "10000"
+
 
                     cmd_args = ["--evaluation_mode"]
                     if not graphics_toggle.state:
                         cmd_args.append("--no_graphics")
 
-                    model_path = os.path.join("models", model_name, "best_model.keras")
+                    model_path = os.path.join("models", model_name)
                     if os.path.exists(model_path):
                         cmd_args.append(f"--load_model={model_path}")
 
                     cmd_args.extend([
                         f"--name={model_name}",
+                        f"--episodes={episodes}",
                         f"--map_width={map_width}",
                         f"--map_height={map_height}"
                     ])
@@ -193,24 +188,19 @@ def run_lobby():
             elif event.type == pygame.KEYDOWN and active_input:
                 active_input.handle_key(event)
 
-        # Draw UI elements
         title = title_font.render("Configuration", True, (220, 220, 220))
         screen.blit(title, (screen.get_width() // 2 - title.get_width() // 2, 40))
 
-        # Draw input fields
         for input_field in inputs:
             input_field.draw(screen, font)
 
-        # Draw toggles
         graphics_toggle.draw(screen, font)
         vision_toggle.draw(screen, font)
         history_toggle.draw(screen, font)
 
-        # Draw buttons
         train_button.draw(screen, font)
         eval_button.draw(screen, font)
 
-        # Draw instructions
         instructions = font.render("Press ESC to exit", True, (150, 150, 150))
         screen.blit(instructions, (10, 470))
 
