@@ -3,6 +3,7 @@ import contextlib
 import sys
 from arg_parser import setup_argparser
 
+
 def main():
     args = setup_argparser().parse_args()
 
@@ -20,12 +21,12 @@ def main():
     except ImportError:
         run_lobby = None
 
-
     map_width = max(3, min(24, args.map_width))
     map_height = max(3, min(13, args.map_height))
 
     if map_width != args.map_width or map_height != args.map_height:
-        print(f"Warning: Map dimensions adjusted to valid range: {map_width}x{map_height}")
+        print(f"Warning: Map dimensions adjusted "
+              f"to valid range: {map_width}x{map_height}")
         args.map_width = map_width
         args.map_height = map_height
 
@@ -41,7 +42,8 @@ def main():
         args.map_height = max(3, min(13, args.map_height))
 
     board = init_board(args.map_height, args.map_width)
-    agent = SnakeAgent(board, first_layer=args.first_layer, second_layer=args.second_layer)
+    agent = SnakeAgent(board, first_layer=args.first_layer,
+                       second_layer=args.second_layer)
     agent.evaluation_mode = args.evaluation_mode
 
     if args.load_model:
@@ -61,6 +63,7 @@ def main():
 
         if not args.evaluation_mode and args.show_history:
             display_training_history(agent, show_plot=args.show_history)
+
 
 if __name__ == "__main__":
     if '-h' in sys.argv or '--help' in sys.argv:

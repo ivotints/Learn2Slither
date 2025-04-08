@@ -1,14 +1,22 @@
-python3 main.py -ng --name Gorynych_v1.3_16_8_ -fl 16 -sl 8
-python3 main.py -ng --name Gorynych_v1.3_16_8_ -fl 16 -sl 8
-python3 main.py -ng --name Gorynych_v1.3_16_8_ -fl 16 -sl 8
-python3 main.py -ng --name Gorynych_v1.3_16_8_ -fl 16 -sl 8
-python3 main.py -ng --name Gorynych_v1.3_16_8_ -fl 16 -sl 8
-python3 main.py -ng --name Gorynych_v1.3_16_8_ -fl 16 -sl 8
-python3 main.py -ng --name Gorynych_v1.3_16_8_ -fl 16 -sl 8
-python3 main.py -ng --name Gorynych_v1.3_16_8_ -fl 16 -sl 8
-python3 main.py -ng --name Gorynych_v1.3_16_8_ -fl 16 -sl 8
-python3 main.py -ng --name Gorynych_v1.3_16_8_ -fl 16 -sl 8
-python3 main.py -ng --name Gorynych_v1.3_16_8_ -fl 16 -sl 8
-python3 main.py -ng --name Gorynych_v1.3_16_8_ -fl 16 -sl 8
-python3 main.py -ng --name Gorynych_v1.3_16_8_ -fl 16 -sl 8
-python3 main.py -ng --name Gorynych_v1.3_16_8_ -fl 16 -sl 8
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_
+python3 main.py -ng --name Gorynych_v1.4_

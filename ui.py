@@ -1,5 +1,6 @@
 import pygame
 
+
 def handle_ui_events(graphics, step_by_step_mode, wait_for_step, fps):
     running = True
 

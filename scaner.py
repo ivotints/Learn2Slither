@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 
+
 def analyze_model(model_path):
     try:
         with open(os.path.join(model_path, 'logs.txt'), 'r') as file:
@@ -18,8 +19,10 @@ def analyze_model(model_path):
             avg_length = last_300['length'].mean()
 
             return avg_length
-    except:
+    except Exception as e:
+        print(f"Error analyzing {model_path}: {e}")
         return None
+
 
 def main():
     models_dir = 'models'
@@ -40,6 +43,7 @@ def main():
     print("-" * 50)
     for model_name, avg_length in results:
         print(f"{model_name:<20} {avg_length:>15.2f}")
+
 
 if __name__ == "__main__":
     main()

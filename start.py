@@ -2,6 +2,7 @@ import subprocess
 import sys
 import os
 
+
 def main():
     args = sys.argv[1:] if len(sys.argv) > 1 else []
 
@@ -21,11 +22,13 @@ def main():
     except subprocess.CalledProcessError as e:
         return e.returncode
     except FileNotFoundError:
-        print("Error: main.py not found in the current directory", file=sys.stderr)
+        print("Error: main.py not found in the current directory",
+              file=sys.stderr)
         return 1
     except Exception as e:
         print(f"Unexpected error: {e}", file=sys.stderr)
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

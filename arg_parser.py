@@ -1,5 +1,6 @@
 import argparse
 
+
 def setup_argparser():
     parser = argparse.ArgumentParser(
         description="Snake game with Reinforcement Learning")

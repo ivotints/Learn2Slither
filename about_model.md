@@ -10,3 +10,5 @@ Gorynych_v1.3:
 * possible to choose amount of neurons as arguments
 * 128-64 neurons
 
+Gorynych_v1.4
+* Lobby added.

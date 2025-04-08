@@ -1,5 +1,5 @@
 import time
-from Xlib import X, display
+from Xlib import display
 
 d = display.Display()
 s = d.screen()
@@ -12,5 +12,3 @@ while True:
     root.warp_pointer(1000, 990)
     d.sync()
     time.sleep(0.1)
-
-

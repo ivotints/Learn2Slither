@@ -2,6 +2,7 @@ import os
 import statistics
 import pygame
 
+
 def evaluate_model(agent, board, evaluation_episodes):
     agent.evaluation_mode = True
     lengths = []
@@ -32,45 +33,61 @@ def evaluate_model(agent, board, evaluation_episodes):
     return statistics.mean(lengths)
 
 
-def periodic_evaluation(episode, agent, board, eval_frequency, eval_file, best_avg_length, poor_performance_count):
+def periodic_evaluation(
+    episode, agent, board, eval_frequency, eval_file,
+    best_avg_length, poor_performance_c
+):
     print(f"Evaluating model at episode {episode}...")
     avg_length = evaluate_model(agent, board, eval_frequency)
 
     record = "" if best_avg_length > avg_length else " - record!"
-    evaluation_result = f"Episode {episode}: Average length = {avg_length:.2f}{record}\n"
+    evaluation_result = (
+        f"Episode {episode}: Average length = {avg_length:.2f}{record}\n"
+    )
     print(evaluation_result, end="")
     eval_file.write(evaluation_result)
     eval_file.flush()
 
     if avg_length > best_avg_length:
         best_avg_length = avg_length
-        poor_performance_count = 0
+        poor_performance_c = 0
         print(f"New best average length: {best_avg_length:.2f}!")
     else:
-        poor_performance_count += 1
-        print(f"No improvement. Poor performance count: {poor_performance_count}/10")
+        poor_performance_c += 1
+        print(
+            f"No improvement. Poor performance count: {poor_performance_c}/10"
+        )
 
-    stop_training = poor_performance_count >= 10
+    stop_training = poor_performance_c >= 10
     if stop_training:
-        print("No improvement for 10 consecutive evaluations. Stopping training.")
+        print("No improvement for 10 consecutive evaluations. "
+              "Stopping training.")
 
     board.reset()
-    return stop_training, best_avg_length, poor_performance_count
+    return (
+        stop_training,
+        best_avg_length,
+        poor_performance_c
+    )
+
 
 def print_evaluation_summary(evaluation_lengths):
     if not evaluation_lengths:
         return
 
     avg_length = statistics.mean(evaluation_lengths)
-    print(f"\n\nEvaluation Results:")
+    print("\n\nEvaluation Results:")
     print(f"Total games played: {len(evaluation_lengths)}")
     print(f"Average snake length: {avg_length:.2f}")
     print(f"Maximum length achieved: {max(evaluation_lengths)}")
 
+
 def run_training(agent, board, graphics, args):
     agent.set_folder_name(args.name)
-    log_file = open(os.path.join("models", agent.folder_name, 'logs.txt'), 'a')
-    eval_file = open(os.path.join("models", agent.folder_name, 'evaluation.txt'), 'a')
+    log_path = os.path.join("models", agent.folder_name, 'logs.txt')
+    eval_path = os.path.join("models", agent.folder_name, 'evaluation.txt')
+    log_file = open(log_path, 'a')
+    eval_file = open(eval_path, 'a')
 
     fps = 24
     step_by_step_mode = False
@@ -104,13 +121,20 @@ def run_training(agent, board, graphics, args):
                     for i in range(4):
                         direction_labels = ["left", "up", "right", "down"]
                         base_idx = i * 4
-                        print(f"{state[base_idx]:.0f} {state[base_idx+1]:.0f} {state[base_idx+2]:.0f} {state[base_idx+3]:.03f} - {direction_labels[i]}")
+                        print(
+                            f"{state[base_idx]:.0f} {state[base_idx+1]:.0f} "
+                            f"{state[base_idx+2]:.0f} "
+                            f"{state[base_idx+3]:.03f} "
+                            f"- {direction_labels[i]}"
+                        )
                     print()
 
                 if graphics:
                     from ui import handle_ui_events
-                    running, step_by_step_mode, wait_for_step, fps = handle_ui_events(
-                        graphics, step_by_step_mode, wait_for_step, fps
+                    running, step_by_step_mode, wait_for_step, fps = (
+                        handle_ui_events(
+                            graphics, step_by_step_mode, wait_for_step, fps
+                        )
                     )
 
                 if step_by_step_mode and wait_for_step:
@@ -144,7 +168,10 @@ def run_training(agent, board, graphics, args):
                     if step_by_step_mode:
                         wait_for_step = True
 
-            log_msg = f"{episode} rwrd {total_reward:.1f} len {max_length} steps {steps} mem {len(agent.memory)}\n"
+            log_msg = (
+                f"{episode} rwrd {total_reward:.1f} len {max_length} "
+                f"steps {steps} mem {len(agent.memory)}\n"
+            )
             print(log_msg, end="")
             log_file.write(log_msg)
 
@@ -153,8 +180,11 @@ def run_training(agent, board, graphics, args):
             if episode % save_frequency == 0:
                 agent.save_model(episode)
                 log_file.flush()
-                stop, best_avg_length, poor_performance_count = periodic_evaluation(
-                    episode, agent, board, 100, eval_file, best_avg_length, poor_performance_count
+                stop, best_avg_length, poor_performance_count = (
+                    periodic_evaluation(
+                        episode, agent, board, 100, eval_file,
+                        best_avg_length, poor_performance_count
+                    )
                 )
                 print()
                 if stop:
@@ -164,6 +194,7 @@ def run_training(agent, board, graphics, args):
         eval_file.close()
         if episode > 0:
             agent.save_model(episode)
+
 
 def calculate_reward(board, old_length, done):
     if board.length > old_length:

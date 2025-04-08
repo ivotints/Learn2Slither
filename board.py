@@ -1,6 +1,7 @@
 import numpy as np
 import random
 
+
 class init_board:
     EMPTY = 0
     TAIL = 1

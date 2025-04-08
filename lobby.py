@@ -1,6 +1,7 @@
 import pygame
 import os
 
+
 class Button:
     def __init__(self, x, y, width, height, text, color=(50, 50, 50)):
         self.rect = pygame.Rect(x, y, width, height)
@@ -9,9 +10,13 @@ class Button:
         self.hover_color = (color[0]+20, color[1]+20, color[2]+20)
 
     def draw(self, surface, font):
-        color = self.hover_color if self.is_hovered(pygame.mouse.get_pos()) else self.color
+        if self.is_hovered(pygame.mouse.get_pos()):
+            color = self.hover_color
+        else:
+            color = self.color
         pygame.draw.rect(surface, color, self.rect, border_radius=5)
-        pygame.draw.rect(surface, (200, 200, 200), self.rect, 2, border_radius=5)
+        pygame.draw.rect(surface, (200, 200, 200),
+                         self.rect, 2, border_radius=5)
 
         text_surf = font.render(self.text, True, (255, 255, 255))
         text_rect = text_surf.get_rect(center=self.rect.center)
@@ -22,6 +27,7 @@ class Button:
 
     def is_clicked(self, mouse_pos, mouse_clicked):
         return self.is_hovered(mouse_pos) and mouse_clicked
+
 
 class TextInput:
     def __init__(self, x, y, width, height, label, value="", numeric=False):
@@ -53,8 +59,10 @@ class TextInput:
             self.value = self.value[:-1]
         elif self.numeric and event.unicode.isdigit():
             self.value += event.unicode
-        elif not self.numeric and (event.unicode.isalnum() or event.unicode in "-_/.:"):
+        elif not self.numeric and (event.unicode.isalnum()
+                                   or event.unicode in "-_/.:"):
             self.value += event.unicode
+
 
 class Toggle:
     def __init__(self, x, y, label, initial_state=False):
@@ -70,13 +78,15 @@ class Toggle:
         pygame.draw.rect(surface, bg_color, self.rect, border_radius=10)
 
         circle_x = self.rect.right - 10 if self.state else self.rect.left + 10
-        pygame.draw.circle(surface, (240, 240, 240), (circle_x, self.rect.centery), 8)
+        pygame.draw.circle(surface, (240, 240, 240),
+                           (circle_x, self.rect.centery), 8)
 
     def toggle(self, pos, click):
         if self.rect.collidepoint(pos) and click:
             self.state = not self.state
             return True
         return False
+
 
 def run_lobby():
     pygame.init()
@@ -113,7 +123,8 @@ def run_lobby():
         mouse_clicked = False
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN
+                                             and event.key == pygame.K_ESCAPE):
                 pygame.quit()
                 return None, False
 
@@ -166,7 +177,6 @@ def run_lobby():
                     map_height = max(3, min(13, int(inputs[5].value or 10)))
                     episodes = inputs[1].value or "10000"
 
-
                     cmd_args = ["--evaluation_mode"]
                     if not graphics_toggle.state:
                         cmd_args.append("--no_graphics")
@@ -189,7 +199,7 @@ def run_lobby():
                 active_input.handle_key(event)
 
         title = title_font.render("Configuration", True, (220, 220, 220))
-        screen.blit(title, (screen.get_width() // 2 - title.get_width() // 2, 40))
+        screen.blit(title, (screen.get_width()//2 - title.get_width()//2, 40))
 
         for input_field in inputs:
             input_field.draw(screen, font)
