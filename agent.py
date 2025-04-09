@@ -3,12 +3,12 @@ from tensorflow import keras
 from collections import deque
 import numpy as np
 from datetime import datetime
-from get_state import get_state_16_normalized_numba
+from get_state import get_state_12_normalized_numba
 from get_action import get_action_safe
 
 
 class SnakeAgent:
-    INPUT_SIZE = 16
+    INPUT_SIZE = 12
     OUTPUT_SIZE = 4
     BATCH_SIZE = 128
 
@@ -56,17 +56,14 @@ class SnakeAgent:
 
     def get_state(self):
         directions = np.array(self.board.DIRECTIONS, dtype=np.int8)
-        return get_state_16_normalized_numba(
+        return get_state_12_normalized_numba(
             self.board.head_y, self.board.head_x, self.board.table,
-            self.board.tail_y, self.board.tail_x, directions,
-            self.board.TAIL, self.board.APPLE, self.board.PEPPER,
+            directions, self.board.TAIL, self.board.APPLE,
             self.board.size_y, self.board.size_x
         )
 
     def get_action(self, state):
         return get_action_safe(self, state)
-        # Dangerous action getter is commented out as it's undefined
-        # return get_action_dangerous(self, state)
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))

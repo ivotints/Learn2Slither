@@ -94,7 +94,7 @@ def run_training(agent, board, graphics, args):
     wait_for_step = False
     episodes = max(2, args.episodes + 1)
     show_vision = args.show_vision
-    save_frequency = 50
+    save_frequency = 10
     running = True
 
     best_avg_length = 0
@@ -199,8 +199,6 @@ def run_training(agent, board, graphics, args):
 def calculate_reward(board, old_length, done):
     if board.length > old_length:
         return 1.0  # Food eaten
-    elif board.length < old_length:
-        return -1.0  # Lost tail
     elif done:
         return -5.0  # Game over
     return 0.0  # No change

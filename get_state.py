@@ -89,3 +89,40 @@ def get_state_16_normalized_numba(head_y, head_x, table, tail_y, tail_x, directi
         state[base_idx + 3] = dist * SIZE_INV
 
     return state
+
+@nb.njit
+def get_state_12_normalized_numba(head_y, head_x, table, directions, TAIL, APPLE, SIZE_Y, SIZE_X):
+    state = np.zeros(12, dtype=np.float32)
+
+    MAX_DISTANCE = max(SIZE_Y, SIZE_X)
+    SIZE_INV = 1.0 / MAX_DISTANCE
+
+    for i in range(4):
+        dy, dx = directions[i]
+        y = head_y
+        x = head_x
+        dist = 0
+        base_idx = i * 3
+
+        while True:
+            y += dy
+            x += dx
+            if not (0 <= y < SIZE_Y and 0 <= x < SIZE_X):
+                state[base_idx] = 1
+                break
+
+            cell = table[y][x]
+            if cell == TAIL:  # and (y != tail_y or x != tail_x):
+                state[base_idx] = 1  # Tail detected
+                break
+            if cell == APPLE:
+                state[base_idx + 1] = 1  # Apple detected
+                break
+
+            # Pepper is now treated as empty cell
+            # For both pepper and empty cells, we just increment distance and continue
+            dist += 1
+
+        state[base_idx + 2] = dist * SIZE_INV
+
+    return state
