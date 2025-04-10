@@ -13,6 +13,7 @@ Gorynych_v1.3:
 Gorynych_v1.4
 * Lobby added.
 
-Gorynych_v1.4.2
+Gorynych_v1.5
 * only 12 neurons input, no pepper, no punishment for pepper.
 * model safe and evaluation every 10 steps
+* 64 training batch

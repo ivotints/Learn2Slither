@@ -10,7 +10,7 @@ from get_action import get_action_safe
 class SnakeAgent:
     INPUT_SIZE = 12
     OUTPUT_SIZE = 4
-    BATCH_SIZE = 128
+    BATCH_SIZE = 64
 
     def __init__(self, board, first_layer=32, second_layer=16):
         self.board = board

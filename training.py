@@ -55,12 +55,12 @@ def periodic_evaluation(
     else:
         poor_performance_c += 1
         print(
-            f"No improvement. Poor performance count: {poor_performance_c}/10"
+            f"No improvement. Poor performance count: {poor_performance_c}/50"
         )
 
-    stop_training = poor_performance_c >= 10
+    stop_training = poor_performance_c >= 50
     if stop_training:
-        print("No improvement for 10 consecutive evaluations. "
+        print("No improvement for 50 consecutive evaluations. "
               "Stopping training.")
 
     board.reset()
