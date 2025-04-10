@@ -117,16 +117,36 @@ def run_training(agent, board, graphics, args):
 
             while running and not done and steps_no_food < max_steps:
                 if show_vision:
-                    print("Obstacle|Apple|Pepper|Distance to obstacle")
-                    for i in range(4):
-                        direction_labels = ["left", "up", "right", "down"]
-                        base_idx = i * 4
-                        print(
-                            f"{state[base_idx]:.0f} {state[base_idx+1]:.0f} "
-                            f"{state[base_idx+2]:.0f} "
-                            f"{state[base_idx+3]:.03f} "
-                            f"- {direction_labels[i]}"
-                        )
+                    x_t = board.size_x + 2
+                    y_t = board.size_x + 2
+                    p = [['W' for _ in range(x_t)] for _ in range(y_t)]
+
+                    symbols = {
+                        0: '0',
+                        1: 'S',
+                        2: 'H',
+                        3: 'G',
+                        4: 'R',
+                    }
+
+                    for y in range(board.size_y):
+                        for x in range(board.size_x):
+                            value = board.table[y][x]
+                            if y == board.head_y and x == board.head_x:
+                                p[y+1][x+1] = 'H'
+                            else:
+                                p[y+1][x+1] = symbols.get(value, '?')
+
+                    head_y = board.head_y + 1
+                    head_x = board.head_x + 1
+
+                    for y in range(len(p)):
+                        for x in range(len(p[0])):
+                            if (y != head_y and x != head_x):
+                                p[y][x] = ' '
+
+                    for row in p:
+                        print(''.join(row))
                     print()
 
                 if graphics:
@@ -145,6 +165,11 @@ def run_training(agent, board, graphics, args):
                     break
 
                 action = agent.get_action(state)
+                if show_vision:
+                    direction_names = ["LEFT", "UP", "RIGHT", "DOWN"]
+                    print(direction_names[action])
+                    print()
+
                 old_length = board.length
                 done = board.make_move(action)
 
