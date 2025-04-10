@@ -32,7 +32,6 @@ def display_training_history(agent, show_plot=True):
 
         df = pd.DataFrame(data, columns=['epoch', 'length'])
 
-        fig = plt.figure(figsize=(10, 6))
         plt.plot(df['epoch'], df['length'], color='blue', alpha=0.5, label='Snake Length')
         plt.title('Snake Length Over Training Episodes')
         plt.xlabel('Episode')

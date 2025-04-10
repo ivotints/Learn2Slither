@@ -2,6 +2,7 @@
 import numpy as np
 import numba as nb
 
+
 def get_state_16bits(self):
     state = np.zeros(self.INPUT_SIZE, dtype=np.float32)
 
@@ -19,7 +20,8 @@ def get_state_16bits(self):
         next_x = head_x + dx
         if 0 <= next_y < SIZE and 0 <= next_x < SIZE:
             next_cell = table[next_y][next_x]
-            if next_cell != self.board.TAIL or (next_y == tail_y and next_x == tail_x):
+            if next_cell != self.board.TAIL or (next_y == tail_y
+                                                and next_x == tail_x):
                 state[base_idx + 3] = 1  # Next cell is free to move
 
         y = head_y
@@ -53,8 +55,12 @@ def get_state_16bits(self):
 
     return state
 
+
 @nb.njit
-def get_state_16_normalized_numba(head_y, head_x, table, tail_y, tail_x, directions, TAIL, APPLE, PEPPER, SIZE_Y, SIZE_X):
+def get_state_16_normalized_numba(head_y, head_x,
+                                  table, tail_y, tail_x,
+                                  directions, TAIL, APPLE,
+                                  PEPPER, SIZE_Y, SIZE_X):
     state = np.zeros(16, dtype=np.float32)
 
     MAX_DISTANCE = max(SIZE_Y, SIZE_X)
@@ -75,7 +81,7 @@ def get_state_16_normalized_numba(head_y, head_x, table, tail_y, tail_x, directi
                 break
 
             cell = table[y][x]
-            if cell == TAIL: # and (y != tail_y or x != tail_x):
+            if cell == TAIL:  # and (y != tail_y or x != tail_x):
                 state[base_idx] = 1
                 break
             if cell == APPLE:
@@ -90,8 +96,10 @@ def get_state_16_normalized_numba(head_y, head_x, table, tail_y, tail_x, directi
 
     return state
 
+
 @nb.njit
-def get_state_12_normalized_numba(head_y, head_x, table, directions, TAIL, APPLE, SIZE_Y, SIZE_X):
+def get_state_12_normalized_numba(head_y, head_x, table, directions,
+                                  TAIL, APPLE, SIZE_Y, SIZE_X):
     state = np.zeros(12, dtype=np.float32)
 
     MAX_DISTANCE = max(SIZE_Y, SIZE_X)
@@ -119,8 +127,6 @@ def get_state_12_normalized_numba(head_y, head_x, table, directions, TAIL, APPLE
                 state[base_idx + 1] = 1  # Apple detected
                 break
 
-            # Pepper is now treated as empty cell
-            # For both pepper and empty cells, we just increment distance and continue
             dist += 1
 
         state[base_idx + 2] = dist * SIZE_INV

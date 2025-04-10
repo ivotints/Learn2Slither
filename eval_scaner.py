@@ -3,6 +3,7 @@ import re
 import glob
 from tabulate import tabulate
 
+
 def find_best_score(eval_file_path):
     """Extract the best average length from an evaluation.txt file"""
     try:
@@ -11,7 +12,8 @@ def find_best_score(eval_file_path):
 
         with open(eval_file_path, 'r') as file:
             for line in file:
-                match = re.search(r'Episode (\d+): Average length = (\d+\.\d+)', line)
+                match = re.search(r'Episode (\d+):'
+                                  r' Average length = (\d+\.\d+)', line)
                 if match:
                     episode = int(match.group(1))
                     avg_length = float(match.group(2))
@@ -24,6 +26,7 @@ def find_best_score(eval_file_path):
     except Exception as e:
         print(f"Error processing {eval_file_path}: {e}")
         return 0.0, 0
+
 
 def main():
     pattern = os.path.join('models', '*', 'evaluation.txt')
@@ -49,18 +52,23 @@ def main():
         print("=" * 60)
 
         try:
-            from tabulate import tabulate
             print(tabulate(results, headers='keys', tablefmt='pretty'))
         except ImportError:
             # Fallback formatting without tabulate
-            print(f"{'Model Name':<30} {'Best Avg Length':>15} {'At Episode':>10}")
+            print(f"{'Model Name':<30}"
+                  f" {'Best Avg Length':>15} {'At Episode':>10}")
             print("-" * 60)
             for r in results:
-                print(f"{r['Model Name']:<30} {r['Best Average Length']:>15.2f} {r['At Episode']:>10}")
+                print(f"{r['Model Name']:<30}"
+                      f" {r['Best Average Length']:>15.2f}"
+                      f" {r['At Episode']:>10}")
 
         print("\nTotal models analyzed:", len(results))
     else:
-        print("\nNo evaluation files found. Make sure your models are in the 'models' directory and contain evaluation.txt files.")
+        print("\nNo evaluation files found."
+              " Make sure your models are in the "
+              "'models' directory and contain evaluation.txt files.")
+
 
 if __name__ == "__main__":
     main()

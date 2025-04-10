@@ -1,6 +1,7 @@
 import numpy as np
 import random
 
+
 def get_action_dangerous(self, state):
     if np.random.rand() <= self.epsilon and not self.evaluation_mode:
         action = random.randint(0, self.OUTPUT_SIZE - 1)
@@ -13,6 +14,7 @@ def get_action_dangerous(self, state):
 
     return action
 
+
 def get_action_safe(self, state):
     """AI will choose an action that avoids immediate death when exploring"""
     if np.random.rand() <= self.epsilon and not self.evaluation_mode:
@@ -20,10 +22,12 @@ def get_action_safe(self, state):
         for i, (dy, dx) in enumerate(self.board.DIRECTIONS):
             new_y = self.board.head_y + dy
             new_x = self.board.head_x + dx
-            if 0 <= new_y < self.board.size_y and 0 <= new_x < self.board.size_x:
+            if (0 <= new_y < self.board.size_y
+                    and 0 <= new_x < self.board.size_x):
                 cell = self.board.table[new_y][new_x]
                 if (cell != self.board.TAIL or
-                    (new_y == self.board.tail_y and new_x == self.board.tail_x)):
+                    (new_y == self.board.tail_y
+                        and new_x == self.board.tail_x)):
                     safe_directions.append(i)
         if safe_directions:
             action = random.choice(safe_directions)
@@ -38,6 +42,7 @@ def get_action_safe(self, state):
 
     return action
 
+
 def get_action_half_safe(self, state):
     if np.random.rand() <= self.epsilon and not self.evaluation_mode:
         if np.random.rand() <= 0.9:
@@ -45,10 +50,12 @@ def get_action_half_safe(self, state):
             for i, (dy, dx) in enumerate(self.board.DIRECTIONS):
                 new_y = self.board.head_y + dy
                 new_x = self.board.head_x + dx
-                if 0 <= new_y < self.board.size_y and 0 <= new_x < self.board.size_x:
+                if (0 <= new_y < self.board.size_y
+                        and 0 <= new_x < self.board.size_x):
                     cell = self.board.table[new_y][new_x]
                     if (cell != self.board.TAIL or
-                        (new_y == self.board.tail_y and new_x == self.board.tail_x)):
+                        (new_y == self.board.tail_y and new_x
+                         == self.board.tail_x)):
                         safe_directions.append(i)
             if safe_directions:
                 action = random.choice(safe_directions)

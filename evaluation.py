@@ -2,6 +2,7 @@ import sys
 import signal
 import pygame
 
+
 def run_evaluation(agent, board, graphics, args):
     from training import print_evaluation_summary
     from ui import handle_ui_events
@@ -35,7 +36,10 @@ def run_evaluation(agent, board, graphics, args):
 
             while running and not done and steps_no_food < max_steps:
                 if graphics:
-                    running, step_by_step_mode, wait_for_step, fps = handle_ui_events(
+                    running,
+                    step_by_step_mode,
+                    wait_for_step,
+                    fps = handle_ui_events(
                         graphics, step_by_step_mode, wait_for_step, fps
                     )
 
