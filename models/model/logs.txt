@@ -1,0 +1,7 @@
+1 rwrd -5.0 len 3 steps 27 mem 27
+2 rwrd -5.0 len 3 steps 2 mem 29
+3 rwrd -5.0 len 3 steps 7 mem 36
+4 rwrd -5.0 len 3 steps 3 mem 39
+5 rwrd -5.0 len 3 steps 11 mem 50
+6 rwrd -2.0 len 6 steps 211 mem 261
+7 rwrd 0.0 len 3 steps 1 mem 262
