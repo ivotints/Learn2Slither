@@ -8,21 +8,20 @@ class init_board:
     HEAD = 2
     APPLE = 3
     PEPPER = 4
-    DIRECTIONS = [(0, -1), (-1, 0), (0, 1), (1, 0)]  #LEFT, UP, RIGHT, DOWN
+    DIRECTIONS = [(0, -1), (-1, 0), (0, 1), (1, 0)]  # LEFT, UP, RIGHT, DOWN
 
     def __init__(self, map_height, map_width):
         self.size_y = map_height
         self.size_x = map_width
-        self.table = np.full((self.size_y, self.size_x),self.EMPTY, dtype='int8')
+        self.table = np.full((self.size_y, self.size_x), 0, dtype='int8')
         self.head_y = 0
         self.head_x = 0
         self.tail_y = 0
         self.tail_x = 0
         self.moving_dir = 0
         self.length = 3
-        self.snake_segments = [] # whole snake will be stored here from tail to head in tuple (y, x)
+        self.snake_segments = []  # from tail to head in tuple (y, x)
         self.last_move_random = False
-
 
         self._init_snake()
         self.apple_1 = self.set_cell_to_random_empty(self.APPLE)
@@ -31,7 +30,8 @@ class init_board:
 
     def reset(self):
         """Reset the board to initial state"""
-        self.table = np.full((self.size_y, self.size_x), self.EMPTY, dtype='int8')
+        self.table = np.full((self.size_y, self.size_x),
+                             self.EMPTY, dtype='int8')
         self.head_y = 0
         self.head_x = 0
         self.tail_y = 0
@@ -50,7 +50,6 @@ class init_board:
         return self
 
     def _place_adjacent_segment(self, y, x):
-        """Find and return coordinates for a new segment adjacent to given position"""
         empty_cells = []
         size_y = self.size_y
         size_x = self.size_x
@@ -63,7 +62,8 @@ class init_board:
                     self.table[new_y][new_x] == self.EMPTY):
 
                 if (y == self.head_y and x == self.head_x):
-                    self.moving_dir = self.DIRECTIONS.index((y - new_y, x - new_x))
+                    self.moving_dir = self.DIRECTIONS.index(
+                        (y - new_y, x - new_x))
                     return (new_y, new_x)
 
                 empty_cells.append((new_y, new_x))
@@ -89,42 +89,14 @@ class init_board:
         self.snake_segments.append((self.second_tail_y, self.second_tail_x))
         self.snake_segments.append((self.head_y, self.head_x))
 
-
-    def is_in_table(self, y, x):
-        if (x < 0 or x >= self.size_x or y < 0 or y >= self.size_y):
-            return False
-        return True
-
-    def is_empty(self, y, x):
-        if self.table[y][x] == self.EMPTY:
-            return True
-        return False
-
-    def set_to_empty(self, y, x, value):
-        if (x < 0 or x >= self.size_x or y < 0 or y >= self.size_y):
-            return False
-        if (self.table[y][x] != self.EMPTY):
-            return False
-        self.table[y][x] = value
-        return True
-
-    def set_cell(self, y, x, value):
-        if (x < 0 or x >= self.size_x or y < 0 or y >= self.size_y):
-            return False
-        self.table[y][x] = value
-        return True
-
-    def get_cell(self, y, x):
-        if (x < 0 or x >= self.size_x or y < 0 or y >= self.size_y):
-            return None
-        return self.table[y][x]
-
     def set_cell_to_random_empty(self, value):
         for _ in range(100):
             y = random.randint(0, self.size_y - 1)
             x = random.randint(0, self.size_x - 1)
 
-            if 0 <= y < self.size_y and 0 <= x < self.size_x and self.table[y][x] == self.EMPTY:
+            if (0 <= y < self.size_y
+                    and 0 <= x < self.size_x
+                    and self.table[y][x] == self.EMPTY):
                 self.table[y][x] = value
                 return (y, x)
 
@@ -142,13 +114,12 @@ class init_board:
         new_y = dy + self.head_y
         new_x = dx + self.head_x
         if not (0 <= new_y < self.size_y and 0 <= new_x < self.size_x):
-            # print("Death from wall")
             return True
 
         cell = self.table[new_y][new_x]
         if cell == self.TAIL:
-            if not (new_y == self.tail_y and new_x == self.tail_x) or self.length == 2:
-                # print("Death from canibalism")
+            if not (new_y == self.tail_y
+                    and new_x == self.tail_x) or self.length == 2:
                 return True
             else:
                 self.snake_segments.append((new_y, new_x))
@@ -189,7 +160,6 @@ class init_board:
             self.table[tmp_y][tmp_x] = self.EMPTY
             self.snake_segments = self.snake_segments[1:]
             self.tail_y, self.tail_x = self.snake_segments[0]
-
 
             if (self.length > 1):
                 self.table[self.head_y][self.head_x] = self.TAIL

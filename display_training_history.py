@@ -1,11 +1,9 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
 from datetime import datetime
 import os
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.linear_model import LinearRegression
-from sklearn.pipeline import make_pipeline
+
+
 def display_training_history(agent, show_plot=True):
     try:
         data = []
@@ -26,32 +24,22 @@ def display_training_history(agent, show_plot=True):
             print("No training data found to display.")
             return
 
-        if len(data) < 5:
-            print("Not enough training data for visualization (minimum 5 episodes required).")
-            return
-
         df = pd.DataFrame(data, columns=['epoch', 'length'])
 
-        plt.plot(df['epoch'], df['length'], color='blue', alpha=0.5, label='Snake Length')
+        plt.figure(figsize=(8, 5))
+        plt.plot(df['epoch'], df['length'], color='blue',
+                 marker='.', linestyle='-', label='Snake Length')
         plt.title('Snake Length Over Training Episodes')
         plt.xlabel('Episode')
         plt.ylabel('Snake Length')
         plt.grid(True, alpha=0.3)
-
-        if len(df) > 3:
-            z = np.polyfit(df['epoch'], df['length'], 1)
-            p = np.poly1d(z)
-            plt.plot(df['epoch'], p(df['epoch']), "r--", alpha=0.8, label='Linear Trend')
-
-            X = df['epoch'].values.reshape(-1, 1)
-            poly_degree = 3
-            polyreg = make_pipeline(PolynomialFeatures(poly_degree), LinearRegression())
-            polyreg.fit(X, df['length'])
-            plt.plot(df['epoch'], polyreg.predict(X), 'g-', alpha=0.8, label=f'Non-Linear Trend (degree={poly_degree})')
-
         plt.legend()
 
-        plot_path = os.path.join("models", agent.folder_name, f"training_history_{datetime.now().strftime('%Y%m%d_%H%M')}.png")
+        time = datetime.now().strftime('%Y%m%d_%H%M')
+        plot_path = os.path.join("models",
+                                 agent.folder_name,
+                                 f"training_history_"
+                                 f"{time}.png")
         plt.savefig(plot_path)
         print(f"Training history visualization saved to: {plot_path}")
 
