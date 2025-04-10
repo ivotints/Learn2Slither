@@ -49,9 +49,7 @@ create board 10 on 10
 each position of the board can have 5 states: Snake Head, body segment, Green apple, Red apple, Empty
 
 # Neurons
-4 * 4 = 16 of them:
+3 * 4 = 12 of them:
 * 0/1 Is it obstacle?
-* 0/1 Is it good food?
-* 0/1 Is it bad pepper?
+* 0/1 Is it green food?
 * 0-1 What is the normalized distance?
-applied for LEFT, STRAIGHT, RIGHT and BACKWARDS directions relative to current moveing direction
