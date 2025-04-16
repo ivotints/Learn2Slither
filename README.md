@@ -1,55 +1,108 @@
+# Learn2Slither
 
-Install requirements:
+A reinforcement learning project where a snake learns to navigate and survive in a dynamic environment through Q-learning.
+
+![Learn2Slither Demo](assets/demo.webm)
+
+## Project Overview
+
+Learn2Slither implements a classic snake game controlled by an AI agent that learns optimal strategies through reinforcement learning. Using a neural network built with Keras/TensorFlow, the snake progressively improves its performance through multiple training sessions.
+
+## Features
+
+### Game Environment
+- **Flexible Board Size**: Default 10x10 grid, configurable to any size (width 3-24, height 3-13)
+- **Dynamic Elements**: Green apples (increase length), red apples (decrease length)
+- **Snake**: Starts with length of 3, randomly positioned
+
+### AI Implementation
+- **Learning Framework**: Q-learning with neural networks (Keras/TensorFlow)
+- **State Representation**:  
+  The snake's "vision" is encoded as 12 neurons (3 features × 4 directions: UP, DOWN, LEFT, RIGHT):  
+  - 0/1: Is it an obstacle?
+  - 0/1: Is it green food?
+  - 0-1: Normalized distance to that object
+- **Action Space**: 4 possible movements
+- **Reward System**: Simple yet effective (+1 for eating apple, -5 for death)
+
+### Performance
+- **Average Length**: 28 cells
+- **Maximum Length**: 50 cells
+- **Multiple Trained Models**: Various training configurations available
+
+### Technical Features
+- **Model Management**: Save and load trained models
+- **Visualization**: Graphical interface with adjustable speed
+- **Step-by-Step Mode**: For detailed analysis of agent decisions
+- **Training Configuration**: Command line parameters for sessions, learning mode, map size, etc.
+
+## Installation
+
+```bash
+git clone https://github.com/ivotints/Learn2Slither.git
+cd Learn2Slither
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
-    python3 -m venv venv
-    source ./venv/bin/activate
-    pip install -r requirements.txt
+
+## Running the Snake
+
+```bash
+# Start with default settings
+python3 start.py
+
+# Start with a pre-trained model
+python3 start.py --load_model models/Gorynych_v1.5_4/snake_model_190_20250410_15:20.keras
+
+# Train a new model with 10000 episodes
+python3 start.py --episodes 10000 --name my_model
+
+# Run without graphics
+python3 start.py --no_graphics
+
+# Run in evaluation (no training) mode
+python3 start.py --evaluation_mode --load_model models/Gorynych_v1.5_4/snake_model_190_20250410_15:20.keras
+
+# Show agent vision in terminal
+python3 start.py --show_vision
+
+# Use a custom map size (e.g. 20x13)
+python3 start.py --map_width 20 --map_height 13
+
+# Use graphical lobby
+python3 start.py -ul
 ```
-project about reinforsment learning snake game:
 
-The game board is a 10x10 grid where the snake interacts with apples.
-Two green apples and one red apple are randomly placed on the board.
-The snake starts at length 3; eating a green apple increases its length, while eating a red apple decreases it.
-Colliding with a wall, its own tail, or dropping to zero length results in a game over.
-The project requires many training sessions and a graphical interface with configurable display speeds and a step-by-step mode.
+## Command Line Arguments
 
-Snake Vision: The snake only sees in the four cardinal directions from its head. Providing extra information beyond this vision incurs a penalty.
-Actions: The agent can take one of four actions—UP, LEFT, DOWN, or RIGHT—based solely on this limited view.
+| Argument                | Short | Type    | Default   | Description                                                         |
+|-------------------------|-------|---------|-----------|---------------------------------------------------------------------|
+| --no_graphics           | -ng   | flag    | False     | Turn off graphics                                                   |
+| --evaluation_mode       | -e    | flag    | False     | Run in evaluation mode (no training)                                |
+| --load_model            | -lm   | str     | None      | Path to model to load                                               |
+| --name                  | -n    | str     | model     | Name of model folder                                                |
+| --first_layer           | -fl   | int     | 32        | Number of neurons in the first layer                                |
+| --second_layer          | -sl   | int     | 16        | Number of neurons in the second layer                               |
+| --episodes              | -ep   | int     | 10000     | Number of training episodes                                         |
+| --show_vision           | -sv   | flag    | False     | Show agent vision in terminal                                       |
+| --use_lobby             | -ul   | flag    | False     | Show configuration lobby                                            |
+| --map_width             | -mw   | int     | 10        | Width of the map (3-24)                                             |
+| --map_height            | -mh   | int     | 10        | Height of the map (3-13)                                            |
+| --show_history          | -sh   | flag    | False     | Show training history plot after training                           |
 
-Rewards: The snake aims to grow to at least 10 cells and survive. Actions are rewarded or penalized (e.g., eating a green apple = positive, red apple = negative, game over = big negative).
-Q-learning: The agent uses a Q function (Q-table or Neural Network) to evaluate actions. No other models are allowed.
-Training: The agent learns by exploring different actions, receiving rewards, and updating its Q-values iteratively.
-Model Saving: The learned state can be saved/exported for future use.
-Evaluation Mode: The agent can run without learning to test a trained model. Graphical and terminal outputs can be disabled to speed up training.
+## Training Process
 
-Models Folder: Include trained models in a chosen file format (e.g., .txt), showing different training stages.
-```
-Snake vision:
-          W
-          0
-          0
-          G
-          R
-          0
-          0
-          0
-W000000000HW
-          S
-          0
-          W
+The agent learns through trial and error, with the neural network adjusting its weights based on the rewards received. The learning process involves:
 
-• W = Wall
-• H = Snake Head
-• S = Snake body segment
-• G = Green apple
-• R = Red apple
-• 0 = Empty space
-```
-create board 10 on 10
-each position of the board can have 5 states: Snake Head, body segment, Green apple, Red apple, Empty
+1. **Exploration**: Initially taking random actions to discover the environment
+2. **Exploitation**: Gradually favoring actions that lead to higher rewards
+3. **Iterative Learning**: Refining decision-making over thousands of game sessions
 
-# Neurons
-3 * 4 = 12 of them:
-* 0/1 Is it obstacle?
-* 0/1 Is it green food?
-* 0-1 What is the normalized distance?
+## Results
+
+After extensive training, the snake AI demonstrates impressive capabilities:
+- Efficiently navigates to food sources
+- Avoids walls and self-collisions
+- Achieves an average length of 28 cells
+- Maximum recorded length of 50 cells
