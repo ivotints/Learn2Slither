@@ -2,7 +2,7 @@
 
 A reinforcement learning project where a snake learns to navigate and survive in a dynamic environment through Q-learning.
 
-![Learn2Slither Demo](assets/demo.webm)
+![Learn2Slither Demo](animation.gif)
 
 ## Project Overview
 
